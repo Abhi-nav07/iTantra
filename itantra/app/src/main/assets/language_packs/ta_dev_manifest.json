@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "languageCode": "ta",
+  "displayName": "Tamil",
+  "packVersion": "0.1.0-task05",
+  "downloadSizeBytes": 150000000,
+  "installedSizeBytes": 150000000,
+  "minimumAppVersion": 1,
+  "sttModel": {
+    "modelId": "indicconformer-sherpa-onnx-ta",
+    "format": "onnx",
+    "quantization": "int8",
+    "checksumsSha256": {},
+    "downloadUrl": "https://huggingface.co/parismitaglobalsolutions/indicconformer-sherpa-onnx/resolve/main",
+    "files": ["ta/model.int8.onnx", "tokens.txt"],
+    "sizeBytes": 150000000
+  },
+  "ttsModel": {
+    "modelId": "vits-mms-tam",
+    "format": "onnx",
+    "quantization": "fp32",
+    "checksumsSha256": {},
+    "downloadUrl": "https://huggingface.co/csukuangfj/vits-mms-tam/resolve/main",
+    "files": ["vits-mms-tam.onnx", "lexicon.txt", "tokens.txt"],
+    "sizeBytes": 35000000
+  },
+  "minimumRamBytes": 536870912
+}

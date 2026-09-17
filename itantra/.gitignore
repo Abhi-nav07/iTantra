@@ -1,0 +1,55 @@
+# --- Gradle / Android build outputs ---
+*.iml
+.gradle/
+build/
+/local.properties
+/captures
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# --- IDE ---
+.idea/
+*.hprof
+.navigation/
+captures/
+.DS_Store
+
+# --- Local Android/SDK configuration & secrets ---
+local.properties
+*.jks
+*.keystore
+keystore.properties
+google-services.json
+secrets.properties
+*.env
+
+# --- Large AI model files: must never be committed to this repository. ---
+# Language packs are downloaded at runtime per the modular language-pack
+# architecture (see docs/ARCHITECTURE.md); nothing in `models/` or
+# `language_packs/` on a developer machine belongs in Git.
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.tflite
+*.gguf
+*.ggml
+*.bin
+!gradle/wrapper/gradle-wrapper.properties
+/models/
+/downloaded_language_packs/
+
+# --- Generated audio (test runs, recordings) ---
+*.wav
+*.pcm
+*.mp3
+!app/src/test/resources/**/*.wav
+
+# --- Misc ---
+*.log
+.kotlin/

@@ -1,0 +1,102 @@
+[
+  {
+    "id": "B-001",
+    "category": "SIMPLE SPEECH",
+    "referenceText": "नमस्ते, आप कैसे हैं?"
+  },
+  {
+    "id": "B-002",
+    "category": "SIMPLE SPEECH",
+    "referenceText": "मेरा नाम राहुल है।"
+  },
+  {
+    "id": "B-003",
+    "category": "SIMPLE SPEECH",
+    "referenceText": "आज मौसम बहुत अच्छा है।"
+  },
+  {
+    "id": "B-004",
+    "category": "SIMPLE SPEECH",
+    "referenceText": "मुझे पानी चाहिए।"
+  },
+  {
+    "id": "B-005",
+    "category": "EMERGENCY/DISASTER",
+    "referenceText": "सहायता की आवश्यकता है।"
+  },
+  {
+    "id": "B-006",
+    "category": "EMERGENCY/DISASTER",
+    "referenceText": "कृपया तुरंत बचाव दल भेजें।"
+  },
+  {
+    "id": "B-007",
+    "category": "EMERGENCY/DISASTER",
+    "referenceText": "भूस्खलन के कारण मुख्य सड़क बंद है।"
+  },
+  {
+    "id": "B-008",
+    "category": "EMERGENCY/DISASTER",
+    "referenceText": "बाढ़ का पानी गाँव में घुस गया है।"
+  },
+  {
+    "id": "B-009",
+    "category": "EMERGENCY/DISASTER",
+    "referenceText": "जंगल में भीषण आग लगी है।"
+  },
+  {
+    "id": "B-010",
+    "category": "NUMBERS",
+    "referenceText": "यहाँ सौ से ज्यादा लोग फँसे हैं।"
+  },
+  {
+    "id": "B-011",
+    "category": "NUMBERS",
+    "referenceText": "मेरा फोन नंबर आठ नौ दो है।"
+  },
+  {
+    "id": "B-012",
+    "category": "NUMBERS",
+    "referenceText": "पचास पैकेट राशन की जरूरत है।"
+  },
+  {
+    "id": "B-013",
+    "category": "LOCATION/ROAD",
+    "referenceText": "अस्पताल यहाँ से लगभग पाँच किलोमीटर दूर है।"
+  },
+  {
+    "id": "B-014",
+    "category": "LOCATION/ROAD",
+    "referenceText": "पुल के आगे सड़क पर पानी बहुत तेज़ है।"
+  },
+  {
+    "id": "B-015",
+    "category": "LOCATION/ROAD",
+    "referenceText": "हम उत्तर दिशा की ओर जा रहे हैं।"
+  },
+  {
+    "id": "B-016",
+    "category": "MEDIUM/LONG SENTENCES",
+    "referenceText": "सभी संचार लाइनें कट गई हैं और बिजली भी नहीं है।"
+  },
+  {
+    "id": "B-017",
+    "category": "MEDIUM/LONG SENTENCES",
+    "referenceText": "मेडिकल टीम को जल्द से जल्द हेलीकॉप्टर से भेजें।"
+  },
+  {
+    "id": "B-018",
+    "category": "MEDIUM/LONG SENTENCES",
+    "referenceText": "स्थानीय प्रशासन ने लोगों को सुरक्षित स्थान पर जाने को कहा है।"
+  },
+  {
+    "id": "B-019",
+    "category": "NOISIER/NATURAL SPEECH",
+    "referenceText": "अरे भाई जल्दी आओ, वहाँ दीवार गिर गई है।"
+  },
+  {
+    "id": "B-020",
+    "category": "NOISIER/NATURAL SPEECH",
+    "referenceText": "सर, दवाइयां खत्म हो रही हैं, क्या करें?"
+  }
+]

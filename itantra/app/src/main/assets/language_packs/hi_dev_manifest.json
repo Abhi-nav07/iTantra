@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "languageCode": "hi",
+  "displayName": "Hindi",
+  "packVersion": "0.1.0-task02",
+  "downloadSizeBytes": 197663198,
+  "installedSizeBytes": 197663198,
+  "minimumAppVersion": 1,
+  "sttModel": {
+    "modelId": "indicconformer-sherpa-onnx",
+    "format": "onnx",
+    "quantization": "int8",
+    "checksumsSha256": {},
+    "downloadUrl": "https://huggingface.co/parismitaglobalsolutions/indicconformer-sherpa-onnx/resolve/main",
+    "files": ["hi/model.int8.onnx", "tokens.txt"],
+    "sizeBytes": 197663198
+  },
+  "ttsModel": {
+    "modelId": "vits-mms-hin",
+    "format": "onnx",
+    "quantization": "fp32",
+    "checksumsSha256": {},
+    "downloadUrl": "https://huggingface.co/csukuangfj/vits-mms-hin/resolve/main",
+    "files": ["vits-mms-hin.onnx", "lexicon.txt", "tokens.txt"],
+    "sizeBytes": 35000000
+  },
+  "minimumRamBytes": 536870912
+}

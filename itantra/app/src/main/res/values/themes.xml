@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Minimal platform theme. Actual UI theming (dark, high-contrast,
+        field-communication styling) is implemented in Compose
+        (see ui/theme/Theme.kt). This XML theme only controls the
+        window background before Compose takes over, to avoid a white flash.
+    -->
+    <style name="Theme.iTantra" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+</resources>
