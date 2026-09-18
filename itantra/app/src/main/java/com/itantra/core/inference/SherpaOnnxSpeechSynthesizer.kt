@@ -25,10 +25,18 @@ class SherpaOnnxSpeechSynthesizer(
     override var isLoaded: Boolean = false
         private set
 
+    private fun isModelAvailable(storage: LanguagePackStorage, code: LanguageCode): Boolean {
+        val spec = ModelFileSpecs.getTtsSpec(code) ?: return false
+        val ttsDir = File(storage.packDirectory(code), "tts")
+        if (!ttsDir.exists()) return false
+
+        return spec.requiredFiles.all { File(ttsDir, it).exists() && File(ttsDir, it).length() > 0 }
+    }
+
     override suspend fun load() = withContext(Dispatchers.IO) {
         if (isLoaded) return@withContext
 
-        val spec = ModelFileSpecs.getTtsSpec(languageCode)
+        val spec = ModelFileSpecs.getTtsSpec(languageCode) ?: throw UnsupportedOperationException("No TTS spec for language $languageCode")
         val packDir = storage.packDirectory(languageCode)
         val ttsDir = File(packDir, "tts")
 
@@ -41,7 +49,7 @@ class SherpaOnnxSpeechSynthesizer(
 
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val myPid = android.os.Process.myPid()
-        
+
         fun getProcessPssBytes(): Long {
             val memoryInfoArray = activityManager.getProcessMemoryInfo(intArrayOf(myPid))
             return if (memoryInfoArray.isNotEmpty()) {
@@ -68,7 +76,7 @@ class SherpaOnnxSpeechSynthesizer(
 
         val t1 = SystemClock.elapsedRealtimeNanos()
         val memoryAfter = getProcessPssBytes()
-        
+
         metricsRecorder.recordSystemMemory(memoryAfter - memoryBefore) // Note: this tracks incremental usage
         metricsRecorder.recordTtsModelLoadTime((t1 - t0) / 1_000_000)
 
@@ -78,7 +86,7 @@ class SherpaOnnxSpeechSynthesizer(
     override suspend fun synthesize(request: SpeechSynthesisRequest): SpeechSynthesisResult = withContext(Dispatchers.Default) {
         val t0 = SystemClock.elapsedRealtimeNanos()
         val engine = tts ?: throw IllegalStateException("TTS Engine not loaded")
-        
+
         // Ensure text is not empty
         if (request.text.isBlank()) {
             return@withContext SpeechSynthesisResult(
@@ -91,13 +99,13 @@ class SherpaOnnxSpeechSynthesizer(
         }
 
         val generatedAudio = engine.generate(request.text)
-        
+
         val t1 = SystemClock.elapsedRealtimeNanos()
         val synthesisTimeMs = (t1 - t0) / 1_000_000
-        
+
         val samples = generatedAudio.samples
         val sampleRate = generatedAudio.sampleRate
-        
+
         val audioDurationMs = if (sampleRate > 0) {
             (samples.size.toFloat() / sampleRate * 1000).toLong()
         } else {
@@ -109,7 +117,7 @@ class SherpaOnnxSpeechSynthesizer(
         } else {
             0f
         }
-        
+
         // Track time to first audio. Here we use batch mode so TTFA = SynthesisTime
         metricsRecorder.recordTtsTimeToFirstAudio(synthesisTimeMs)
         metricsRecorder.recordTtsSynthesisDuration(audioDurationMs)

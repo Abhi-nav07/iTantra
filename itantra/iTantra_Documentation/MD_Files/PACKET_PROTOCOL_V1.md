@@ -21,6 +21,6 @@ All fields are **Big Endian**.
 | 24+N | 4 | `Int` | **CRC32**: Checksum covering from byte 4 (MAGIC) through the end of the Payload to detect Bluetooth byte corruption. |
 
 ## ACK & RTT Handshake
-Whenever a device decodes an `ITP` frame with Type `1` (TEXT) and a valid CRC32, it will automatically encode and flush an `ITP` frame with Type `2` (ACK) using the *same Message ID*. 
+Whenever a device decodes an `ITP` frame with Type `1` (TEXT) and a valid CRC32, it will automatically encode and flush an `ITP` frame with Type `2` (ACK) using the *same Message ID*.
 
 The sender tracks the nanosecond elapsed timestamp when flushing the socket and measures the delta upon receiving the matching ACK, rendering an accurate cross-device Round Trip Time (RTT).

@@ -28,12 +28,12 @@ class SherpaOnnxSpeechRecognizer(
     override suspend fun load() = withContext(Dispatchers.IO) {
         if (isLoaded) return@withContext
 
-        val spec = ModelFileSpecs.getSttSpec(languageCode)
+        val spec = ModelFileSpecs.getSttSpec(languageCode) ?: throw UnsupportedOperationException("No STT spec for language ${languageCode}")
         val packDir = storage.packDirectory(languageCode)
-        
+
         // Android paths should be separated into stt and tts subdirectories as per prompt
         val sttDir = File(packDir, "stt")
-        
+
         for (requiredFile in spec.requiredFiles) {
             val f = File(sttDir, requiredFile)
             if (!f.exists() || f.length() == 0L) {
@@ -43,7 +43,7 @@ class SherpaOnnxSpeechRecognizer(
 
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val myPid = android.os.Process.myPid()
-        
+
         fun getProcessPssBytes(): Long {
             val memoryInfoArray = activityManager.getProcessMemoryInfo(intArrayOf(myPid))
             return if (memoryInfoArray.isNotEmpty()) {
@@ -71,10 +71,10 @@ class SherpaOnnxSpeechRecognizer(
         )
 
         recognizer = OfflineRecognizer(config = config)
-        
+
         val t1 = SystemClock.elapsedRealtimeNanos()
         val memoryAfter = getProcessPssBytes()
-        
+
         metricsRecorder.recordSystemMemory(memoryAfter - memoryBefore)
         metricsRecorder.recordSttModelLoadTime((t1 - t0) / 1_000_000)
 
@@ -123,7 +123,7 @@ class SherpaOnnxSpeechRecognizer(
     override suspend fun unload() = withContext(Dispatchers.IO) {
         currentStream?.release()
         currentStream = null
-        
+
         recognizer?.release()
         recognizer = null
         isLoaded = false

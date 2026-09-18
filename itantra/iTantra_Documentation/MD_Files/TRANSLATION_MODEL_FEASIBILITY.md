@@ -23,7 +23,7 @@ IndicTrans2 provides state-of-the-art accuracy for Indian languages.
 ### Pivot vs Direct Routing
 IndicTrans2 typically comes in direction-specific models (e.g., Indic-to-English, English-to-Indic, Indic-to-Indic).
 - **Direct Indic-Indic**: Most accurate, requires one model. If a highly quantized Indic-Indic model can fit in <150MB, this is ideal.
-- **Pivot (Indic -> English -> Indic)**: Requires two translation passes and loading two models (or swapping them). This significantly increases latency and memory churn. 
+- **Pivot (Indic -> English -> Indic)**: Requires two translation passes and loading two models (or swapping them). This significantly increases latency and memory churn.
 
 **Recommendation for iTantra**: We must prioritize **Direct Indic-Indic** models for offline use cases due to latency constraints (half-duplex PTT requires fast turnaround) and memory constraints (loading two models simultaneously is risky).
 

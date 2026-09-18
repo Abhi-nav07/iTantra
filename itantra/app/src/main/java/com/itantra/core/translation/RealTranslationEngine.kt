@@ -45,7 +45,7 @@ class RealTranslationEngine(private val context: Context) : TranslationEngine {
         }
 
         ortEnv = OrtEnvironment.getEnvironment()
-        
+
         val sessionOptions = OrtSession.SessionOptions()
         // Register custom ops if using ORT extensions for tokenization
         // sessionOptions.registerCustomOpLibrary("onnxruntime_extensions")
@@ -53,7 +53,7 @@ class RealTranslationEngine(private val context: Context) : TranslationEngine {
         encoderSession = ortEnv?.createSession(encoderFile.absolutePath, sessionOptions)
         decoderSession = ortEnv?.createSession(decoderFile.absolutePath, sessionOptions)
         tokenizerSession = ortEnv?.createSession(tokenizerFile.absolutePath, sessionOptions)
-        
+
         isLoaded = true
     }
 
@@ -97,17 +97,17 @@ class RealTranslationEngine(private val context: Context) : TranslationEngine {
 
             // 2. Tokenization
             val inputIds = tokenize(preprocessedText)
-            
+
             // 3. Encoder
             val encoderHiddenStates = runEncoder(inputIds)
-            
+
             // 4. Decoder Generation Loop (Autoregressive greedy search)
             val eosTokenId = 2L // Typically 2 for sentencepiece/fairseq
             val bosTokenId = 0L // or target lang tag depending on model
 
             val maxTokens = 128
             val decodedIds = mutableListOf(bosTokenId)
-            
+
             for (step in 0 until maxTokens) {
                 val nextToken = runDecoderStep(decodedIds.toLongArray(), encoderHiddenStates)
                 decodedIds.add(nextToken)
@@ -118,7 +118,7 @@ class RealTranslationEngine(private val context: Context) : TranslationEngine {
 
             // 5. Decode tokens to text
             val translatedText = detokenize(decodedIds.toLongArray())
-            
+
             TranslationResult(text, translatedText, true, sourceLang, targetLang)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -132,7 +132,7 @@ class RealTranslationEngine(private val context: Context) : TranslationEngine {
     private fun tokenize(text: String): LongArray {
         val env = ortEnv ?: throw IllegalStateException("Environment not initialized")
         val session = tokenizerSession ?: throw IllegalStateException("Tokenizer not loaded")
-        
+
         // ORT Extensions SentencePiece op typically takes a string tensor
         val inputTensor = OnnxTensor.createTensor(env, arrayOf(text))
         inputTensor.use {
@@ -146,7 +146,7 @@ class RealTranslationEngine(private val context: Context) : TranslationEngine {
     private fun detokenize(ids: LongArray): String {
         val env = ortEnv ?: throw IllegalStateException("Environment not initialized")
         val session = tokenizerSession ?: throw IllegalStateException("Tokenizer not loaded")
-        
+
         val inputTensor = OnnxTensor.createTensor(env, arrayOf(ids))
         inputTensor.use {
             session.run(mapOf("ids" to it)).use { result ->
@@ -159,7 +159,7 @@ class RealTranslationEngine(private val context: Context) : TranslationEngine {
     private fun runEncoder(inputIds: LongArray): FloatArray {
         val env = ortEnv ?: throw IllegalStateException("Environment not initialized")
         val session = encoderSession ?: throw IllegalStateException("Encoder not loaded")
-        
+
         // Shape: [batch_size=1, seq_len]
         val inputTensor = OnnxTensor.createTensor(env, arrayOf(inputIds))
         inputTensor.use {
@@ -169,7 +169,7 @@ class RealTranslationEngine(private val context: Context) : TranslationEngine {
                 val rawValue = result[0].value
                 return if (rawValue is Array<*>) {
                     // Compile-safe placeholder: real output shape requires model inspection
-                    FloatArray(0) 
+                    FloatArray(0)
                 } else {
                     rawValue as FloatArray
                 }
@@ -180,11 +180,11 @@ class RealTranslationEngine(private val context: Context) : TranslationEngine {
     private fun runDecoderStep(decoderInputIds: LongArray, encoderHiddenStates: FloatArray): Long {
         val env = ortEnv ?: throw IllegalStateException("Environment not initialized")
         val session = decoderSession ?: throw IllegalStateException("Decoder not loaded")
-        
+
         val inputIdsTensor = OnnxTensor.createTensor(env, arrayOf(decoderInputIds))
         // Note: 3D shape [1, seq_len, hidden_dim] requires model inspection to reconstruct correctly
         val hiddenTensor = OnnxTensor.createTensor(env, arrayOf(arrayOf(encoderHiddenStates)))
-        
+
         inputIdsTensor.use { t1 ->
             hiddenTensor.use { t2 ->
                 session.run(mapOf("input_ids" to t1, "encoder_hidden_states" to t2)).use { result ->

@@ -1,35 +1,34 @@
 # iTantra
+SIH 2026 PS 173 / ISRO
 
-Offline, multilingual neural voice transceiver — SIH 2026, Problem Statement 173. 
-See `iTantra_Documentation/MD_Files/ARCHITECTURE.md` for the full design, `iTantra_Documentation/MD_Files/MODEL_STRATEGY.md` for model research findings, and `iTantra_Documentation/MD_Files/adr/` for recorded engineering decisions.
+What it is:
+offline semantic voice transceiver prototype.
 
-**Status: FINAL PROTOTYPE PARTIAL (Module 10 complete)** 
-- **STT (Sherpa-ONNX Whisper)**, **TTS (VITS Piper)**, **VAD (Silero)**, **Continuous Mode**, and **Secure Transport** (ECDH/AES-GCM via Bluetooth/Wi-Fi Direct) are **implemented** and integrated.
-- **Machine Translation (IndicTrans2)** is currently **BLOCKED** natively on Android without a custom C++ KV-cache inference wrapper.
+Current status:
+FINAL PROTOTYPE PARTIAL
 
-## Building
+Implemented:
+- Compose field UI
+- PTT
+- continuous Silero VAD
+- semantic packets
+- Bluetooth RFCOMM source implementation
+- local Wi-Fi TCP source implementation
+- secure session architecture
+- emergency semantic codes
+- Hindi/English STT/TTS runtime integration
+- reproducible model provisioning.
 
-Requires Android Studio (or a standalone Android SDK) and JDK 17+.
+Not yet verified:
+- physical STT/TTS Android inference
+- two-phone Bluetooth/Wi-Fi
+- real WER
+- physical latency/RAM.
 
-```
-./gradlew assembleDebug
-./gradlew testDebugUnitTest
-```
+Blocked:
+- real cross-language MT.
 
-## Project layout
-
-```
-app/src/main/java/com/itantra/
-  app/            entry point, navigation, theme, manual DI (AppGraph)
-  domain/model/   pure data types (Language, LanguagePackManifest, Measurement, ...)
-  domain/repository/  LanguagePackRepository contract
-  core/inference/ SherpaOnnxSpeechRecognizer / KokoroTtsEngine / ContinuousListenEngine / VoiceActivityDetector
-  core/transport/ BluetoothPeerTransport / WifiPeerTransport / TransportCoordinator
-  core/crypto/    SecureSessionManager (ECDH/AES-GCM)
-  core/storage/   LanguagePackStorage 
-  core/metrics/   MetricsRecorder — real measurements only
-  data/languagepack/  RealLanguagePackRepository 
-  feature/transceiver/  main screen
-  feature/languages/    language packs screen
-  feature/diagnostics/  diagnostics screen
-```
+Architecture:
+- SherpaOnnxSpeechSynthesizer for TTS
+- WifiPeerTransport / local Wi-Fi TCP
+- Module 15 final freeze.

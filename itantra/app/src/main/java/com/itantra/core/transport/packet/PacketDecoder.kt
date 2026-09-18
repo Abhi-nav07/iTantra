@@ -13,9 +13,12 @@ class PacketDecodeException(message: String) : Exception(message)
  * and the passed array contains exactly the `frameContentLength` bytes.
  */
 object PacketDecoder {
-    
+
     // Max payload constraint to prevent memory exhaustion (e.g. 16 KB)
     const val MAX_PAYLOAD_SIZE = 16 * 1024
+
+    // Max frame content length = Header(32) + Payload + CRC(4) = Payload + 36
+    const val MAX_FRAME_BODY_SIZE = MAX_PAYLOAD_SIZE + 36
 
     fun decode(framedData: ByteArray): ItantraPacket {
         if (framedData.size < 33) {
@@ -27,7 +30,7 @@ object PacketDecoder {
         // 1. Verify CRC32
         val crcStart = 0
         val crcEnd = framedData.size - 4
-        
+
         val crc32 = CRC32()
         crc32.update(framedData, crcStart, crcEnd)
         val expectedCrc = crc32.value.toInt()
@@ -57,11 +60,11 @@ object PacketDecoder {
 
         val flags = buffer.get()
         val legacyLangId = buffer.get()
-        
+
         var sourceLangId: Byte = legacyLangId
         var targetLangId: Byte = legacyLangId
         var translationModeId: Byte = TranslationMode.NONE.id
-        
+
         if (version == 2.toByte()) {
             sourceLangId = buffer.get()
             targetLangId = buffer.get()

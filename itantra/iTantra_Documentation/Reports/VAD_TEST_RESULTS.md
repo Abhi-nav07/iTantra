@@ -26,7 +26,7 @@
 ### 4. Resource Usage
 - `MicrophoneAudioSource` utilizes a single broadcast `MutableSharedFlow`, allowing both Continuous Mode and PTT to tap into the same active PCM stream without requesting multiple overlapping microphone locks.
 - VAD `release()` clears the ONNX engine out of memory when switching back to PTT, preventing persistent baseline memory bloat.
-- STT/TTS models are loaded once via `ActiveLanguageSessionManager` and reused repeatedly. 
+- STT/TTS models are loaded once via `ActiveLanguageSessionManager` and reused repeatedly.
 
 ## Known Limitations
 - VAD lacks Deep Noise Suppression (DNS). Extremely loud and sustained non-speech audio (like a TV in the background) might trigger a transmission if the STT engine hallucinates text from the noise.

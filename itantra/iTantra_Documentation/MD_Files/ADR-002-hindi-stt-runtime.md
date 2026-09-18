@@ -33,7 +33,7 @@ iTantra is an offline-first multilingual neural voice transceiver. For our Hindi
 The 197MB `int8` model translates to roughly a 200MB disk footprint for the Hindi pack. At runtime, memory mapping will consume ~250MB-400MB RAM, which remains within safe bounds for modern Android devices.
 
 ## Latency Implications
-Using `sherpa-onnx` with CTC enables real-time factor (RTF) decoding often far below 1.0 on modern ARM cores, allowing for fast finalization upon PTT release. 
+Using `sherpa-onnx` with CTC enables real-time factor (RTF) decoding often far below 1.0 on modern ARM cores, allowing for fast finalization upon PTT release.
 
 ## Android Compatibility
 The official `sherpa-onnx.aar` seamlessly supports ARM64/ARMv7 Android ABIs with a JNI Kotlin bridge.

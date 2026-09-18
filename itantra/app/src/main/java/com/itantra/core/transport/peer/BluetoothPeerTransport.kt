@@ -33,7 +33,7 @@ class BluetoothPeerTransport(
 
     companion object {
         // Shared stable UUID for iTantra transceivers
-        val ITANTRA_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB") // SPP UUID is common for RFCOMM
+        val ITANTRA_UUID: UUID = UUID.fromString("20f01a35-26a1-432a-bc95-021b36d0130a")
         const val NAME = "iTantraTransceiver"
     }
 
@@ -51,17 +51,17 @@ class BluetoothPeerTransport(
 
     private val writeMutex = Mutex()
 
+    private var _isServer = false
+    override val isServer: Boolean get() = _isServer
+
     override val isConnected: Boolean
         get() = stateFlow.value == ConnectionState.CONNECTED
 
     override fun observeConnectionState(): Flow<ConnectionState> = stateFlow
 
-    override suspend fun connect() {
-        throw UnsupportedOperationException("Call startServer() or connectToDevice(device)")
-    }
-
     suspend fun startServer() {
         disconnect()
+        _isServer = true
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
             stateFlow.value = ConnectionState.ERROR
             return
@@ -85,6 +85,7 @@ class BluetoothPeerTransport(
 
     suspend fun connectToDevice(device: BluetoothDevice) {
         disconnect()
+        _isServer = false
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
             stateFlow.value = ConnectionState.ERROR
             return
@@ -129,8 +130,8 @@ class BluetoothPeerTransport(
                         bytesRead += read
                     }
                     val frameLength = ByteBuffer.wrap(lengthBuffer).order(ByteOrder.BIG_ENDIAN).getInt()
-                    
-                    if (frameLength <= 0 || frameLength > PacketDecoder.MAX_PAYLOAD_SIZE + 24) {
+
+                    if (frameLength <= 0 || frameLength > PacketDecoder.MAX_FRAME_BODY_SIZE) {
                         throw Exception("Invalid frame length: $frameLength")
                     }
 
@@ -158,7 +159,7 @@ class BluetoothPeerTransport(
 
     override suspend fun send(bytes: ByteArray) {
         if (!isConnected) return
-        
+
         withContext(Dispatchers.IO) {
             try {
                 writeMutex.withLock {

@@ -50,7 +50,7 @@ data class TransceiverMessage(
     val source: MessageSource,
     val createdAtLocal: Long,
     val state: MessageState,
-    
+
     // Metrics per message for E2E traceability
     val sttLatencyMillis: Long = 0,
     val payloadBytes: Int = 0,
@@ -70,7 +70,7 @@ data class TransceiverMessage(
             if (rawPcmEquivalentBytes == 0) return 0f
             return 100f * (1.0f - (finalFrameBytes.toFloat() / rawPcmEquivalentBytes.toFloat()))
         }
-        
+
     val semanticBitrateBps: Float
         get() {
             if (speechDurationMillis == 0L) return 0f

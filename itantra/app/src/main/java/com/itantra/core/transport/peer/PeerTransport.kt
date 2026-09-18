@@ -17,10 +17,10 @@ interface PeerTransport {
     fun observeConnectionState(): Flow<ConnectionState>
 
     /**
-     * Connects to a peer or starts listening. The implementation dictates the exact semantics
-     * (e.g., Bluetooth device address vs. Wi-Fi IP address).
+     * Whether this transport instance is currently acting as the server/listener.
+     * Used for deterministic cryptographic roles.
      */
-    suspend fun connect()
+    val isServer: Boolean
 
     /** Disconnects the transport. */
     suspend fun disconnect()
@@ -32,7 +32,7 @@ interface PeerTransport {
     suspend fun send(bytes: ByteArray)
 
     /**
-     * Stream of completely read framed payloads. The implementation must consume the 
+     * Stream of completely read framed payloads. The implementation must consume the
      * length prefix and emit exactly the body bytes.
      */
     fun receive(): Flow<ByteArray>

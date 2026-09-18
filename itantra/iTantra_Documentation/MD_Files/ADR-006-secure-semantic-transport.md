@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-iTantra uses a semantic packet protocol over raw RFCOMM (Bluetooth) to transmit recognized text and control packets between peers without relying on cloud services. While RFCOMM provides a basic link, the application requires MITM protection, confidentiality, and replay prevention tailored to the application's semantic payload, ensuring sensitive conversations remain secure even over potentially compromised basebands or Wi-Fi Direct in the future. 
+iTantra uses a semantic packet protocol over raw RFCOMM (Bluetooth) to transmit recognized text and control packets between peers without relying on cloud services. While RFCOMM provides a basic link, the application requires MITM protection, confidentiality, and replay prevention tailored to the application's semantic payload, ensuring sensitive conversations remain secure even over potentially compromised basebands or Wi-Fi Direct in the future.
 
 The security layer needs to be extremely lightweight to preserve the low-latency STT/TTS pipeline, and it must run entirely offline on low-end devices (`minSdk 26`).
 

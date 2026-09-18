@@ -5,11 +5,11 @@ Phase 04D introduces an offline SOS protocol built into the semantic transceiver
 
 ## Protocol Mechanics
 
-1. **Priority Domain**: 
+1. **Priority Domain**:
    - Uses a 3-bit priority field mapped to `ItantraPacket` `flags` (0 = NORMAL, 1 = HIGH, 2 = CRITICAL).
    - `flags` is included in the AES-GCM Additional Authenticated Data (AAD) block (byte 10 of the `PacketEncoder` wire format). Any tampering with the priority bit will cause the AES-GCM MAC validation to fail.
 
-2. **Emergency Codes**: 
+2. **Emergency Codes**:
    - Semantic codes (e.g., `0x05 LANDSLIDE`) are serialized via the `EMERGENCY_CODE (10)` packet type.
    - The payload is a single byte indicating the code ID. This achieves extreme compression (30 bytes total wire size including headers and security overhead).
    - Upon receipt, the code is resolved locally to the recipient's language via `EmergencyPhraseResolver`.

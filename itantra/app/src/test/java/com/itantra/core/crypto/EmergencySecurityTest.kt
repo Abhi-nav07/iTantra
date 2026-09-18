@@ -22,7 +22,7 @@ class EmergencySecurityTest {
         val aliceHello = alice.startHandshake(isInitiator = true)
         val bobHello = bob.processSecureHello(aliceHello)!!
         alice.processSecureHello(bobHello)
-        
+
         val aliceConfirm = alice.confirmSasMatch()
         val bobConfirm = bob.confirmSasMatch()
         alice.processSecureVerify(bobConfirm)

@@ -8,14 +8,15 @@ data class ModelFileSpec(
     val requiredFiles: List<String>,
     val mainModelFile: String,
     val tokensFile: String,
-    val auxFile: String? = null // e.g., decoder for STT, or dataDir/json for TTS
+    val auxFile: String? = null
 ) {
     enum class EngineType { STT, TTS }
 }
 
 object ModelFileSpecs {
-    fun getSttSpec(lang: LanguageCode): ModelFileSpec {
-        // We use csukuangfj/sherpa-onnx-whisper-tiny for both EN and HI
+    fun getSttSpec(lang: LanguageCode): ModelFileSpec? {
+        if (lang != LanguageCode.HINDI && lang != LanguageCode.ENGLISH) return null
+
         return ModelFileSpec(
             type = ModelFileSpec.EngineType.STT,
             languageCode = lang,
@@ -30,10 +31,14 @@ object ModelFileSpecs {
         )
     }
 
-    fun getTtsSpec(lang: LanguageCode): ModelFileSpec {
-        val prefix = if (lang == LanguageCode.HINDI) "hi_IN-pratham-medium" else "en_US-amy-medium"
+    fun getTtsSpec(lang: LanguageCode): ModelFileSpec? {
+        val prefix = when (lang) {
+            LanguageCode.HINDI -> "hi_IN-pratham-medium"
+            LanguageCode.ENGLISH -> "en_US-amy-medium"
+            else -> return null
+        }
         val modelFile = "$prefix.onnx"
-        
+
         return ModelFileSpec(
             type = ModelFileSpec.EngineType.TTS,
             languageCode = lang,
@@ -43,7 +48,7 @@ object ModelFileSpecs {
             ),
             mainModelFile = modelFile,
             tokensFile = "tokens.txt",
-            auxFile = "" // Not strictly requiring espeak-ng-data in basic file check to avoid 100-file checks
+            auxFile = ""
         )
     }
 }

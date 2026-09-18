@@ -1,7 +1,7 @@
 # iTantra Language Pack Architecture
 
 ## Overview
-To support 10 offline Indic languages efficiently without bloating the base APK, iTantra uses a dynamic **Language Pack Storage** architecture. 
+To support 10 offline Indic languages efficiently without bloating the base APK, iTantra uses a dynamic **Language Pack Storage** architecture.
 
 A Language Pack consists of:
 - **STT (Speech-to-Text)** resources (ONNX weights, tokens)

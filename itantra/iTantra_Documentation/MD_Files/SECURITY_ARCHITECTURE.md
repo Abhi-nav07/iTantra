@@ -21,7 +21,7 @@ Any tampering with the ciphertext or the unencrypted header (which is fed into t
 
 ### 2. MITM Prevention
 The handshake uses Ephemeral ECDH (NIST P-256) to establish a shared secret.
-Both peers deterministically hash the handshake transcript (Public Keys + Nonces) and derive a 6-digit **Short Authentication String (SAS)**. 
+Both peers deterministically hash the handshake transcript (Public Keys + Nonces) and derive a 6-digit **Short Authentication String (SAS)**.
 Both users must visually verify that the 6-digit codes match and click `MATCHES` on the UI. If a MITM attacker proxies the connection, the attacker must establish two separate ECDH sessions, resulting in completely different SAS codes on the two devices.
 
 ### 3. Replay & Reflection Protection

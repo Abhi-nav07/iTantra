@@ -23,7 +23,7 @@ In Module 8F, we introduced granular metrics tracking across the `TransceiverCoo
 - **Raw Audio Requirement**: None. Deterministic button press.
 - **Semantic Payload**: `1 byte` (e.g., `0x02` for MEDICAL_EMERGENCY)
 - **Secure Frame Size**: `~37 bytes`
-- **Reliability Features**: 
+- **Reliability Features**:
   - Independent of STT/TTS models.
   - Automatically retries 3 times on delivery failure.
   - Generates synthetic speech locally on the receiver's device ("Immediate medical assistance required").

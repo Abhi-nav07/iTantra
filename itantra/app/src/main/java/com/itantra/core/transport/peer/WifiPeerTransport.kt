@@ -41,17 +41,17 @@ class WifiPeerTransport : PeerTransport {
 
     private val writeMutex = Mutex()
 
+    private var _isServer = false
+    override val isServer: Boolean get() = _isServer
+
     override val isConnected: Boolean
         get() = stateFlow.value == ConnectionState.CONNECTED
 
     override fun observeConnectionState(): Flow<ConnectionState> = stateFlow
 
-    override suspend fun connect() {
-        throw UnsupportedOperationException("Call startServer() or connectToAddress(host, port)")
-    }
-
     suspend fun startServer(port: Int = DEFAULT_PORT) {
         disconnect()
+        _isServer = true
 
         connectionJob = scope.launch {
             stateFlow.value = ConnectionState.CONNECTING // LISTENING
@@ -75,6 +75,7 @@ class WifiPeerTransport : PeerTransport {
 
     suspend fun connectToAddress(host: String, port: Int = DEFAULT_PORT) {
         disconnect()
+        _isServer = false
 
         connectionJob = scope.launch {
             stateFlow.value = ConnectionState.CONNECTING
@@ -97,7 +98,7 @@ class WifiPeerTransport : PeerTransport {
         inputStream = socket.getInputStream()
         outputStream = socket.getOutputStream()
         stateFlow.value = ConnectionState.CONNECTED
-        
+
         // Stop listening if we were acting as a server
         try { serverSocket?.close() } catch (e: Exception) {}
         serverSocket = null
@@ -119,8 +120,8 @@ class WifiPeerTransport : PeerTransport {
                         bytesRead += read
                     }
                     val frameLength = ByteBuffer.wrap(lengthBuffer).order(ByteOrder.BIG_ENDIAN).getInt()
-                    
-                    if (frameLength <= 0 || frameLength > PacketDecoder.MAX_PAYLOAD_SIZE + 24) {
+
+                    if (frameLength <= 0 || frameLength > PacketDecoder.MAX_FRAME_BODY_SIZE) {
                         throw Exception("Invalid frame length: $frameLength")
                     }
 
@@ -150,7 +151,7 @@ class WifiPeerTransport : PeerTransport {
 
     override suspend fun send(bytes: ByteArray) {
         if (!isConnected) return
-        
+
         withContext(Dispatchers.IO) {
             try {
                 writeMutex.withLock {

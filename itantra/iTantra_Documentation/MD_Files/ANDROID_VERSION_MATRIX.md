@@ -1,6 +1,6 @@
 # Android Version Compatibility Matrix
 
-The following matrix documents the compatibility of the iTantra transceiver across various Android API levels. 
+The following matrix documents the compatibility of the iTantra transceiver across various Android API levels.
 
 > [!WARNING]
 > **Emulator Environment Limitation:** The current SDK installation environment lacks the required Emulator and System Images to boot and run Android Virtual Devices (AVDs). Therefore, true real-app runtime validation across API levels is physically blocked in this environment and accurately logged as **EMULATOR LIMITATION**. All dependency capability audits passed via **UNIT/STATIC VERIFIED**.

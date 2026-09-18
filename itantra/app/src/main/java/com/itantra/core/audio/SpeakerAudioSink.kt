@@ -21,7 +21,7 @@ class SpeakerAudioSink {
      */
     fun init(sampleRate: Int, usage: Int = AudioAttributes.USAGE_VOICE_COMMUNICATION) {
         release() // ensure clean state
-        
+
         val minBufferSize = AudioTrack.getMinBufferSize(
             sampleRate,
             AudioFormat.CHANNEL_OUT_MONO,
@@ -45,7 +45,7 @@ class SpeakerAudioSink {
             .setBufferSizeInBytes(minBufferSize)
             .setTransferMode(AudioTrack.MODE_STREAM)
             .build()
-            
+
         audioTrack?.play()
     }
 

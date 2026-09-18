@@ -12,7 +12,7 @@ The `RealTranslationEngine` provides a structural baseline for actual neural mac
 1. **Pre-processing**: Prepends BCP-47 / model-specific language tags to the input string based on the `TranslationRouter` resolution.
 2. **Tokenization**: Uses an ONNX session wrapper (typically SentencePiece via ORT extensions) to convert Unicode to `input_ids`.
 3. **Encoder Execution**: Passes `input_ids` to `encoder_model.onnx` to generate `encoder_hidden_states`.
-4. **Decoder Loop (Auto-Regressive)**: 
+4. **Decoder Loop (Auto-Regressive)**:
    - Initializes a `decoder_input_ids` array with the `BOS` token.
    - Feeds the `encoder_hidden_states` and previous tokens into `decoder_model.onnx`.
    - Generates the next token using greedy search (`argmax`).

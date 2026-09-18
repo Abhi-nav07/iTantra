@@ -1,7 +1,7 @@
 # Training and Accuracy Report
 
 ## 1. How much has the model been trained in this project?
-**Zero.** We have **not** trained or fine-tuned any models from scratch within this project environment. 
+**Zero.** We have **not** trained or fine-tuned any models from scratch within this project environment.
 
 ### Why?
 As established in the Module 6B-1 requirements:

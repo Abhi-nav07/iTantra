@@ -21,6 +21,6 @@ This document tracks the offline Text-To-Speech inference metrics for the Hindi 
 *Note: Actuals will be filled following physical device testing. The framework is now in place to measure these directly via the Diagnostics screen.*
 
 ## Findings
-- **Integration**: The STT and TTS models share the `sherpa-onnx` `.aar`, keeping the base APK size unaffected. 
+- **Integration**: The STT and TTS models share the `sherpa-onnx` `.aar`, keeping the base APK size unaffected.
 - **Audio Output**: `SpeakerAudioSink` routes the PCM array directly to the system speaker without introducing media player latency.
 - **Session Lifecycle**: The `ActiveLanguageSessionManager` correctly tears down old engines before loading new ones to maintain a predictable PSS memory envelope.

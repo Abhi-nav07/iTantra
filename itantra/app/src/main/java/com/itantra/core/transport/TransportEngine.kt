@@ -16,12 +16,13 @@ import kotlinx.coroutines.flow.Flow
 interface TransportEngine {
 
     val isConnected: Boolean
+    val isServer: Boolean
 
     fun observeConnectionState(): Flow<ConnectionState>
 
-    suspend fun connect()
-
     suspend fun disconnect()
+
+    fun notifyAckReceived(messageId: Long)
 
     /** Sends a complete packet and returns transmission metrics. */
     suspend fun send(packet: ItantraPacket): TransmissionMetrics

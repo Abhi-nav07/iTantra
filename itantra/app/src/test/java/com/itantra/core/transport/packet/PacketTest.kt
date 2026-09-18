@@ -23,7 +23,7 @@ class PacketTest {
         )
 
         val framedBytes = PacketEncoder.encode(packet)
-        
+
         // Strip the 4-byte frame length prefix for the decoder
         val buffer = ByteBuffer.wrap(framedBytes).order(ByteOrder.BIG_ENDIAN)
         val frameLength = buffer.getInt()
@@ -64,7 +64,7 @@ class PacketTest {
     fun testCorruptCrc() {
         val packet = ItantraPacket(type = PacketType.TEXT, messageId = 1L)
         val framedBytes = PacketEncoder.encode(packet)
-        
+
         val buffer = ByteBuffer.wrap(framedBytes).order(ByteOrder.BIG_ENDIAN)
         val frameLength = buffer.getInt()
         val frameData = ByteArray(frameLength)

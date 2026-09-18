@@ -102,7 +102,7 @@ class ConnectViewModel(
             bluetoothTransport.connectToDevice(device)
         }
     }
-    
+
     fun startWifiServer(port: Int = WifiPeerTransport.DEFAULT_PORT) {
         viewModelScope.launch {
             transportCoordinator.switchTransport(wifiTransport)
@@ -116,7 +116,7 @@ class ConnectViewModel(
             wifiTransport.connectToAddress(host, port)
         }
     }
-    
+
     fun disconnect() {
         viewModelScope.launch {
             transportCoordinator.disconnect()
@@ -188,7 +188,7 @@ fun ConnectScreen(
                 )
             }
         }
-        
+
         Spacer(Modifier.height(Spacing.md))
 
         Column(modifier = Modifier.padding(horizontal = Spacing.lg)) {
@@ -284,7 +284,7 @@ fun ConnectScreen(
                 }
 
                 Spacer(Modifier.height(Spacing.xxl))
-                
+
                 if (state.transportMode == TransportMode.BLUETOOTH) {
                     Text(
                         "PAIRED DEVICES",
@@ -319,9 +319,9 @@ fun ConnectScreen(
                         color = TextSecondary,
                     )
                     Spacer(Modifier.height(Spacing.sm))
-                    
+
                     var hostIp by remember { mutableStateOf("") }
-                    
+
                     OutlinedTextField(
                         value = hostIp,
                         onValueChange = { hostIp = it },
@@ -329,9 +329,9 @@ fun ConnectScreen(
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
-                    
+
                     Spacer(Modifier.height(Spacing.md))
-                    
+
                     Button(
                         onClick = {
                             if (hostIp.isNotBlank()) {

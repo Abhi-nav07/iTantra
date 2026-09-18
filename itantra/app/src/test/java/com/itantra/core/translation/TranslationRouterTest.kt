@@ -11,17 +11,17 @@ class TranslationRouterTest {
     class MockTranslationEngine : TranslationEngine {
         var invocationCount = 0
             private set
-        
+
         override var isLoaded: Boolean = true
             private set
-            
+
         override val supportedSourceLanguages = setOf(LanguageCode.HINDI, LanguageCode.ENGLISH)
         override val supportedTargetLanguages = setOf(LanguageCode.HINDI, LanguageCode.ENGLISH)
 
         override fun init(modelsDir: File) {
             isLoaded = true
         }
-        
+
         override fun release() {
             isLoaded = false
         }
@@ -48,7 +48,7 @@ class TranslationRouterTest {
         val router = TranslationRouter(engine)
 
         val result = router.routeAndTranslate("test text", LanguageCode.HINDI, LanguageCode.HINDI)
-        
+
         assertEquals("test text", result.translatedText)
         assertEquals(true, result.isSuccessful)
         assertEquals(0, engine.invocationCount)
@@ -60,7 +60,7 @@ class TranslationRouterTest {
         val router = TranslationRouter(engine)
 
         val result = router.routeAndTranslate("test text", LanguageCode.HINDI, LanguageCode.ENGLISH)
-        
+
         assertEquals("[TRANSLATED] test text", result.translatedText)
         assertEquals(true, result.isSuccessful)
         assertEquals(1, engine.invocationCount)
@@ -73,7 +73,7 @@ class TranslationRouterTest {
 
         // Tamil is not in the mock's supported languages
         val result = router.routeAndTranslate("test text", LanguageCode.HINDI, LanguageCode.TAMIL)
-        
+
         assertEquals(false, result.isSuccessful)
         assertEquals("UNSUPPORTED_ROUTE", result.error)
         assertEquals(0, engine.invocationCount)

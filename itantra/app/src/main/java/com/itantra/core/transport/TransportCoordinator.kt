@@ -25,9 +25,9 @@ class TransportCoordinator(
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val incomingFlow = MutableSharedFlow<ItantraPacket>(extraBufferCapacity = 64)
     private val ackFlow = MutableSharedFlow<Long>(extraBufferCapacity = 64)
-    
+
     private var readJob: Job? = null
-    
+
     init {
         startObservingTransport()
     }
@@ -50,16 +50,8 @@ class TransportCoordinator(
             activeTransport.receive().collect { frameData ->
                 try {
                     val packet = PacketDecoder.decode(frameData)
-                    if (packet.type == PacketType.ACK) {
-                        ackFlow.emit(packet.messageId)
-                    } else {
-                        // Automatically ACK TEXT and EMERGENCY_CODE packets immediately
-                        if (packet.type == PacketType.TEXT || packet.type == PacketType.EMERGENCY_CODE) {
-                            sendAck(packet.messageId)
-                        }
-                        // Emit packet upward
-                        incomingFlow.emit(packet)
-                    }
+                    // Emit packet upward for decryption/authentication
+                    incomingFlow.emit(packet)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -67,36 +59,27 @@ class TransportCoordinator(
         }
     }
 
-    private fun sendAck(messageId: Long) {
-        scope.launch {
-            try {
-                val ackPacket = ItantraPacket(type = PacketType.ACK, messageId = messageId)
-                val encoded = PacketEncoder.encode(ackPacket)
-                activeTransport.send(encoded)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
     override val isConnected: Boolean
         get() = activeTransport.isConnected
 
+    override val isServer: Boolean
+        get() = activeTransport.isServer
+
     override fun observeConnectionState(): Flow<ConnectionState> {
         return activeTransport.observeConnectionState()
-    }
-
-    override suspend fun connect() {
-        activeTransport.connect()
     }
 
     override suspend fun disconnect() {
         activeTransport.disconnect()
     }
 
+    override fun notifyAckReceived(messageId: Long) {
+        scope.launch { ackFlow.emit(messageId) }
+    }
+
     override suspend fun send(packet: ItantraPacket): TransmissionMetrics {
         if (!isConnected) return TransmissionMetrics()
-        
+
         return withContext(Dispatchers.IO) {
             val t0 = System.nanoTime()
             val encoded = PacketEncoder.encode(packet)
@@ -115,7 +98,7 @@ class TransportCoordinator(
 
                 activeTransport.send(encoded)
                 txLatency = ackDeferred?.await()
-                
+
             } catch (e: TimeoutCancellationException) {
                 // No ACK received in time
                 println("ACK timeout for message: ${packet.messageId}")
@@ -124,8 +107,8 @@ class TransportCoordinator(
             }
 
             TransmissionMetrics(
-                payloadBytes = Measurement.Measured(packet.payload.size), // Keep for backward compatibility, it's actually secure payload size
-                secureBytes = Measurement.Measured(packet.payload.size + 32), // 32 is header size, rough estimate of secure packet size
+                payloadBytes = Measurement.Measured(packet.payload.size),
+                secureBytes = Measurement.Measured(packet.payload.size + 32), // Exact authenticated header (32) + encrypted payload
                 finalFrameBytes = Measurement.Measured(encoded.size),
                 packetBytes = Measurement.Measured(encoded.size),
                 transmissionLatencyMillis = txLatency?.let { Measurement.Measured(it / 1_000_000) } ?: Measurement.NotMeasured

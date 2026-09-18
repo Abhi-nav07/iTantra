@@ -11,7 +11,7 @@ iTantra is an offline-first multilingual neural voice transceiver. The architect
 5. **TTS Inference**: Received packets are synthesized natively via the local offline TTS model (`KokoroTtsEngine`) and piped to the system speaker.
 
 ## 10-Language Architecture
-The system centrally represents 10 Indian languages. 
+The system centrally represents 10 Indian languages.
 - All language metadata is strictly defined in a single `LanguageCatalog` to avoid scattered string constants.
 - The lifecycle maintains that exactly **one** language pack can be actively loaded into RAM at any given moment.
 

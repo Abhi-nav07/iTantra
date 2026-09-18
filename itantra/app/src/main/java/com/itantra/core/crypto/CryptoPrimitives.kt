@@ -43,11 +43,11 @@ object CryptoPrimitives {
     fun computeSharedSecret(localPrivateKey: PrivateKey, peerPublicKeyBytes: ByteArray): ByteArray {
         val keyFactory = KeyFactory.getInstance("EC")
         val peerPublicKey = keyFactory.generatePublic(X509EncodedKeySpec(peerPublicKeyBytes))
-        
+
         val keyAgreement = KeyAgreement.getInstance("ECDH")
         keyAgreement.init(localPrivateKey)
         keyAgreement.doPhase(peerPublicKey, true)
-        
+
         return keyAgreement.generateSecret()
     }
 
@@ -66,7 +66,7 @@ object CryptoPrimitives {
         mac.init(SecretKeySpec(prk, "HmacSHA256"))
         val result = ByteArray(outputLength)
         val n = ceil(outputLength / 32.0).toInt()
-        
+
         var t = ByteArray(0)
         var offset = 0
         for (i in 1..n) {
@@ -74,7 +74,7 @@ object CryptoPrimitives {
             mac.update(info)
             mac.update(i.toByte())
             t = mac.doFinal()
-            
+
             val toCopy = minOf(32, outputLength - offset)
             System.arraycopy(t, 0, result, offset, toCopy)
             offset += toCopy
@@ -90,7 +90,7 @@ object CryptoPrimitives {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val secretKey = SecretKeySpec(key, "AES")
         val spec = GCMParameterSpec(AES_GCM_TAG_LEN * 8, nonce)
-        
+
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, spec)
         if (aad.isNotEmpty()) {
             cipher.updateAAD(aad)
@@ -106,7 +106,7 @@ object CryptoPrimitives {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         val secretKey = SecretKeySpec(key, "AES")
         val spec = GCMParameterSpec(AES_GCM_TAG_LEN * 8, nonce)
-        
+
         cipher.init(Cipher.DECRYPT_MODE, secretKey, spec)
         if (aad.isNotEmpty()) {
             cipher.updateAAD(aad)
@@ -121,11 +121,11 @@ object CryptoPrimitives {
         val mac = Mac.getInstance("HmacSHA256")
         mac.init(SecretKeySpec(sharedSecret, "HmacSHA256"))
         val hash = mac.doFinal(transcriptHash)
-        
+
         // Extract 4 bytes deterministically
         val buffer = ByteBuffer.wrap(hash, 0, 4)
         val code = buffer.int.toUInt()
-        
+
         // Modulo 1,000,000 for a 6-digit number
         val digits = code % 1000000u
         return digits.toString().padStart(6, '0')

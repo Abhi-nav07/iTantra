@@ -126,7 +126,7 @@ fun BenchmarkActiveView(
     } else {
         val buttonColor = if (state.isRecording) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
         val contentColor = if (state.isRecording) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer
-        
+
         Box(
             modifier = Modifier
                 .size(120.dp)
@@ -185,7 +185,7 @@ fun BenchmarkSummaryView(state: BenchmarkState) {
     Spacer(modifier = Modifier.height(16.dp))
 
     val validResults = state.results.filter { it.isSuccess && it.referenceWordCount > 0 }
-    
+
     if (validResults.isEmpty()) {
         Text("No valid results recorded.")
         return
@@ -195,7 +195,7 @@ fun BenchmarkSummaryView(state: BenchmarkState) {
     val medWer = validResults.map { it.wer }.sorted().let {
         if (it.isEmpty()) 0f else it[it.size / 2]
     }
-    
+
     val latencies = validResults.map { it.finalizationLatencyMs }.sorted()
     val medLatency = if (latencies.isEmpty()) 0L else latencies[latencies.size / 2]
     val p95Latency = if (latencies.isEmpty()) 0L else latencies[(latencies.size * 0.95).toInt().coerceAtMost(latencies.size - 1)]
@@ -211,7 +211,7 @@ fun BenchmarkSummaryView(state: BenchmarkState) {
             Text("P95 Final Latency: $p95Latency ms")
         }
     }
-    
+
     Spacer(modifier = Modifier.height(16.dp))
     Text("Results have been saved to local JSON.", style = MaterialTheme.typography.bodyMedium)
 }

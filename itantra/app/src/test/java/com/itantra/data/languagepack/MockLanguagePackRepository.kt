@@ -75,7 +75,7 @@ class MockLanguagePackRepository : LanguagePackRepository {
                 val entry = entries.getValue(language.code)
                 val isSttDownloaded = entry.sttInstallState == LanguagePackInstallState.INSTALLED || entry.sttInstallState == LanguagePackInstallState.UPDATE_AVAILABLE
                 val isTtsDownloaded = entry.ttsInstallState == LanguagePackInstallState.INSTALLED || entry.ttsInstallState == LanguagePackInstallState.UPDATE_AVAILABLE
-                
+
                 val availability = when {
                     !isSttDownloaded && !isTtsDownloaded -> LanguagePackAvailability.AVAILABLE
                     activeLanguageFlow.value == language.code -> LanguagePackAvailability.ACTIVE
@@ -106,7 +106,7 @@ class MockLanguagePackRepository : LanguagePackRepository {
     override suspend fun setActiveLanguage(code: LanguageCode): Boolean {
         val entry = entriesFlow.value[code] ?: return false
         val isDownloaded = (entry.sttInstallState == LanguagePackInstallState.INSTALLED ||
-            entry.sttInstallState == LanguagePackInstallState.UPDATE_AVAILABLE) || 
+            entry.sttInstallState == LanguagePackInstallState.UPDATE_AVAILABLE) ||
             (entry.ttsInstallState == LanguagePackInstallState.INSTALLED ||
             entry.ttsInstallState == LanguagePackInstallState.UPDATE_AVAILABLE)
         if (!isDownloaded) return false

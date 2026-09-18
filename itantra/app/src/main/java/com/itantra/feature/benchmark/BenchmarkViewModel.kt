@@ -66,7 +66,7 @@ class BenchmarkViewModel(
                 val json = Json { ignoreUnknownKeys = true }
                 val sentences = json.decodeFromString<List<BenchmarkSentenceDef>>(jsonString)
                 if (sentences.isNotEmpty()) {
-                    _state.update { 
+                    _state.update {
                         it.copy(
                             sentences = sentences,
                             currentReferenceText = sentences[0].referenceText,
@@ -83,13 +83,13 @@ class BenchmarkViewModel(
 
     fun startRecording() {
         if (_state.value.sessionFinished || _state.value.isRecording) return
-        
+
         val engine = activeLanguageSessionManager.currentSttEngine
         if (engine == null || !engine.isLoaded) return
 
         _state.update { it.copy(isRecording = true, currentTranscription = "Listening...") }
         startTimeMs = SystemClock.elapsedRealtime()
-        
+
         recordingJob = viewModelScope.launch {
             launch {
                 delay(60_000L)
@@ -106,7 +106,7 @@ class BenchmarkViewModel(
             }
         }
     }
-    
+
     fun stopRecording() {
         if (!_state.value.isRecording) return
         _state.update { it.copy(isRecording = false) }
@@ -136,7 +136,7 @@ class BenchmarkViewModel(
 
                 val finalString = result.text
                 val werResult = WordErrorRateCalculator.calculate(_state.value.currentReferenceText, finalString)
-                
+
                 val benchResult = BenchmarkResult(
                     sentenceId = _state.value.currentSentenceId,
                     referenceText = _state.value.currentReferenceText,

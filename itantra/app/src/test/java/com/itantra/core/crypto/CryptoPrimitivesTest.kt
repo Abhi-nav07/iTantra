@@ -32,7 +32,7 @@ class CryptoPrimitivesTest {
 
         assertArrayEquals(derived1, derived2)
         assertEquals(64, derived1.size)
-        
+
         // Different info should produce different output
         var allMatch = true
         for (i in derived1.indices) {
@@ -89,10 +89,10 @@ class CryptoPrimitivesTest {
 
         val sas1 = CryptoPrimitives.deriveSas(secret, transcript)
         val sas2 = CryptoPrimitives.deriveSas(secret, transcript)
-        
+
         assertEquals(sas1, sas2)
         assertEquals(6, sas1.length)
-        
+
         val sas3 = CryptoPrimitives.deriveSas(secret, "different_transcript".toByteArray())
         assertNotEquals(sas1, sas3)
     }

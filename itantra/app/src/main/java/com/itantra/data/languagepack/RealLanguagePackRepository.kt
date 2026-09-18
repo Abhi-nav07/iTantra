@@ -2,6 +2,7 @@ package com.itantra.data.languagepack
 
 import android.content.Context
 import android.os.StatFs
+import com.itantra.core.inference.ModelFileSpecs
 import com.itantra.core.storage.LanguagePackStorage
 import com.itantra.domain.model.LanguageCatalog
 import com.itantra.domain.model.LanguageCode
@@ -18,7 +19,6 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,6 +26,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 class RealLanguagePackRepository(
     private val context: Context,
@@ -36,10 +38,10 @@ class RealLanguagePackRepository(
     private val sttStates = MutableStateFlow(buildInitialSttStates())
     private val ttsStates = MutableStateFlow(buildInitialTtsStates())
     private val activeLanguage = MutableStateFlow<LanguageCode?>(
-        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).getString("source_lang", null)?.let { LanguageCode.valueOf(it) }
+        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).getString("source_lang", null)?.let { LanguageCode.fromWireCode(it) }
     )
     private val targetLanguage = MutableStateFlow<LanguageCode?>(
-        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).getString("target_lang", null)?.let { LanguageCode.valueOf(it) }
+        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).getString("target_lang", null)?.let { LanguageCode.fromWireCode(it) }
     )
     private val downloadProgress = MutableStateFlow<Map<LanguageCode, Int>>(emptyMap())
     private val downloadJobs = mutableMapOf<LanguageCode, Job>()
@@ -47,18 +49,26 @@ class RealLanguagePackRepository(
     private fun buildInitialSttStates(): Map<LanguageCode, LanguagePackInstallState> {
         return LanguageCatalog.all.associate { lang ->
             val dir = File(storage.packDirectory(lang.code), "stt")
-            val spec = com.itantra.core.inference.ModelFileSpecs.getSttSpec(lang.code)
-            val sttExists = spec.requiredFiles.all { File(dir, it).exists() && File(dir, it).length() > 0 }
-            lang.code to if (sttExists) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
+            val spec = ModelFileSpecs.getSttSpec(lang.code)
+            if (spec == null) {
+                lang.code to LanguagePackInstallState.NOT_INSTALLED
+            } else {
+                val sttExists = spec.requiredFiles.all { File(dir, it).exists() && File(dir, it).length() > 0 }
+                lang.code to if (sttExists) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
+            }
         }
     }
-    
+
     private fun buildInitialTtsStates(): Map<LanguageCode, LanguagePackInstallState> {
         return LanguageCatalog.all.associate { lang ->
             val dir = File(storage.packDirectory(lang.code), "tts")
-            val spec = com.itantra.core.inference.ModelFileSpecs.getTtsSpec(lang.code)
-            val ttsExists = spec.requiredFiles.all { File(dir, it).exists() && File(dir, it).length() > 0 }
-            lang.code to if (ttsExists) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
+            val spec = ModelFileSpecs.getTtsSpec(lang.code)
+            if (spec == null) {
+                lang.code to LanguagePackInstallState.NOT_INSTALLED
+            } else {
+                val ttsExists = spec.requiredFiles.all { File(dir, it).exists() && File(dir, it).length() > 0 }
+                lang.code to if (ttsExists) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
+            }
         }
     }
 
@@ -72,27 +82,25 @@ class RealLanguagePackRepository(
                     sttState == LanguagePackInstallState.INSTALLED || ttsState == LanguagePackInstallState.INSTALLED -> LanguagePackAvailability.DOWNLOADED
                     else -> LanguagePackAvailability.AVAILABLE
                 }
-                
+
                 var sttSize = 0L
                 if (sttState == LanguagePackInstallState.INSTALLED) {
                     val dir = File(storage.packDirectory(lang.code), "stt")
-                    val spec = com.itantra.core.inference.ModelFileSpecs.getSttSpec(lang.code)
-                    spec.requiredFiles.forEach { f ->
+                    ModelFileSpecs.getSttSpec(lang.code)?.requiredFiles?.forEach { f ->
                         val file = File(dir, f)
                         if (file.exists()) sttSize += file.length()
                     }
                 }
-                
+
                 var ttsSize = 0L
                 if (ttsState == LanguagePackInstallState.INSTALLED) {
                     val dir = File(storage.packDirectory(lang.code), "tts")
-                    val spec = com.itantra.core.inference.ModelFileSpecs.getTtsSpec(lang.code)
-                    spec.requiredFiles.forEach { f ->
+                    ModelFileSpecs.getTtsSpec(lang.code)?.requiredFiles?.forEach { f ->
                         val file = File(dir, f)
                         if (file.exists()) ttsSize += file.length()
                     }
                 }
-                
+
                 LanguagePackSummary(
                     language = lang,
                     sttInstallState = sttState,
@@ -121,80 +129,92 @@ class RealLanguagePackRepository(
     }
 
     override suspend fun setActiveLanguage(code: LanguageCode): Boolean {
-        // Only require that the state is recorded. The inference engine handles actual loading.
         activeLanguage.value = code
-        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).edit().putString("source_lang", code.name).apply()
+        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).edit().putString("source_lang", code.wireCode).apply()
         return true
     }
 
     override suspend fun setTargetLanguage(code: LanguageCode): Boolean {
         targetLanguage.value = code
-        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).edit().putString("target_lang", code.name).apply()
+        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).edit().putString("target_lang", code.wireCode).apply()
         return true
     }
 
     override suspend fun startDownload(code: LanguageCode) {
+        val sttSpec = ModelFileSpecs.getSttSpec(code)
+        val ttsSpec = ModelFileSpecs.getTtsSpec(code)
+
+        if (sttSpec == null && ttsSpec == null) {
+            return
+        }
+
         val manifest = getManifest(code) ?: return
-        
-        updateState(code, LanguagePackInstallState.DOWNLOADING, true)
-        updateState(code, LanguagePackInstallState.DOWNLOADING, false)
+
+        if (sttSpec != null) updateState(code, LanguagePackInstallState.DOWNLOADING, true)
+        if (ttsSpec != null) updateState(code, LanguagePackInstallState.DOWNLOADING, false)
         updateProgress(code, 0)
-        
-        val dir = storage.packDirectory(code)
-        dir.mkdirs()
-        
-        val statFs = StatFs(dir.absolutePath)
+
+        val rootDir = storage.packDirectory(code)
+        val tmpDir = File(rootDir, ".install_tmp")
+        tmpDir.deleteRecursively()
+        tmpDir.mkdirs()
+
+        val statFs = StatFs(rootDir.absolutePath)
         val availableBytes = statFs.availableBlocksLong * statFs.blockSizeLong
-        val requiredBytes = manifest.sttModel.sizeBytes + 50_000_000L // 50MB safety margin
+        val requiredBytes = (manifest.sttModel.sizeBytes + (manifest.ttsModel?.sizeBytes ?: 0L)) + 50_000_000L
+
         if (availableBytes < requiredBytes) {
-            updateState(code, LanguagePackInstallState.ERROR, true)
-            updateState(code, LanguagePackInstallState.ERROR, false)
+            if (sttSpec != null) updateState(code, LanguagePackInstallState.ERROR, true)
+            if (ttsSpec != null) updateState(code, LanguagePackInstallState.ERROR, false)
             updateProgress(code, null)
             return
         }
-        
+
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val sttUrlBase = manifest.sttModel.downloadUrl ?: throw Exception("No STT URL")
-                
-                if (manifest.sttModel.files.isNotEmpty()) {
-                    manifest.sttModel.files.forEach { file ->
-                        val localName = if (file.endsWith("onnx")) "model.int8.onnx" else "tokens.txt"
-                        downloadFile("$sttUrlBase/$file", File(dir, localName), code, isSecondary = file != manifest.sttModel.files.first())
-                    }
-                } else {
-                    downloadFile("$sttUrlBase/hi/model.int8.onnx", File(dir, "model.int8.onnx"), code)
-                    downloadFile("$sttUrlBase/tokens.txt", File(dir, "tokens.txt"), code, isSecondary = true)
-                }
-                
-                val ttsUrlBase = manifest.ttsModel.downloadUrl
-                if (ttsUrlBase != null) {
-                    if (manifest.ttsModel.files.isNotEmpty()) {
-                        manifest.ttsModel.files.forEach { file ->
-                            val localName = when {
-                                file.endsWith("onnx") -> "tts_model.onnx"
-                                file.endsWith("lexicon.txt") -> "lexicon.txt"
-                                else -> "tts_tokens.txt"
-                            }
-                            downloadFile("$ttsUrlBase/$file", File(dir, localName), code, isSecondary = file != manifest.ttsModel.files.first())
-                        }
-                    } else {
-                        downloadFile("$ttsUrlBase/vits-mms-hin.onnx", File(dir, "tts_model.onnx"), code, isSecondary = true)
-                        downloadFile("$ttsUrlBase/lexicon.txt", File(dir, "lexicon.txt"), code, isSecondary = true)
-                        downloadFile("$ttsUrlBase/tokens.txt", File(dir, "tts_tokens.txt"), code, isSecondary = true)
+                if (sttSpec != null) {
+                    val sttUrlBase = manifest.sttModel.downloadUrl ?: throw Exception("No STT URL")
+                    val tmpStt = File(tmpDir, "stt")
+                    tmpStt.mkdirs()
+
+                    sttSpec.requiredFiles.forEach { file ->
+                        downloadFile("$sttUrlBase/$file", File(tmpStt, file), code, isSecondary = false)
                     }
                 }
-                
-                updateState(code, LanguagePackInstallState.INSTALLED, true)
-                updateState(code, LanguagePackInstallState.INSTALLED, false)
+
+                if (ttsSpec != null) {
+                    val ttsUrlBase = manifest.ttsModel?.downloadUrl ?: throw Exception("No TTS URL")
+                    val tmpTts = File(tmpDir, "tts")
+                    tmpTts.mkdirs()
+
+                    ttsSpec.requiredFiles.forEach { file ->
+                        downloadFile("$ttsUrlBase/$file", File(tmpTts, file), code, isSecondary = false)
+                    }
+                }
+
+                // Atomic Move
+                if (sttSpec != null) {
+                    val sttDest = File(rootDir, "stt")
+                    sttDest.deleteRecursively()
+                    Files.move(File(tmpDir, "stt").toPath(), sttDest.toPath(), StandardCopyOption.ATOMIC_MOVE)
+                    updateState(code, LanguagePackInstallState.INSTALLED, true)
+                }
+                if (ttsSpec != null) {
+                    val ttsDest = File(rootDir, "tts")
+                    ttsDest.deleteRecursively()
+                    Files.move(File(tmpDir, "tts").toPath(), ttsDest.toPath(), StandardCopyOption.ATOMIC_MOVE)
+                    updateState(code, LanguagePackInstallState.INSTALLED, false)
+                }
             } catch (e: kotlinx.coroutines.CancellationException) {
-                updateState(code, LanguagePackInstallState.NOT_INSTALLED, true)
-                updateState(code, LanguagePackInstallState.NOT_INSTALLED, false)
+                // Ignore, keep valid packs
+                if (sttSpec != null) updateState(code, if (File(rootDir, "stt").exists()) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED, true)
+                if (ttsSpec != null) updateState(code, if (File(rootDir, "tts").exists()) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED, false)
             } catch (e: Exception) {
                 e.printStackTrace()
-                updateState(code, LanguagePackInstallState.ERROR, true)
-                updateState(code, LanguagePackInstallState.ERROR, false)
+                if (sttSpec != null) updateState(code, LanguagePackInstallState.ERROR, true)
+                if (ttsSpec != null) updateState(code, LanguagePackInstallState.ERROR, false)
             } finally {
+                tmpDir.deleteRecursively()
                 updateProgress(code, null)
                 downloadJobs.remove(code)
             }
@@ -202,16 +222,20 @@ class RealLanguagePackRepository(
         downloadJobs[code] = job
     }
 
-    private suspend fun downloadFile(urlStr: String, dest: File, code: LanguageCode, isSecondary: Boolean = false) = withContext(Dispatchers.IO) {
+    private suspend fun downloadFile(urlStr: String, dest: File, code: LanguageCode, isSecondary: Boolean) = withContext(Dispatchers.IO) {
         val url = URL(urlStr)
         val connection = url.openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connectTimeout = 15000
         connection.readTimeout = 60000
-        
-        val tempDest = File(dest.absolutePath + ".tmp")
+
+        if (connection.responseCode !in 200..299) {
+            throw Exception("HTTP Error ${connection.responseCode} for $urlStr")
+        }
+
+        val tempDest = File(dest.absolutePath + ".part")
         val fileLength = connection.contentLength
-        
+
         connection.inputStream.use { input ->
             FileOutputStream(tempDest).use { output ->
                 val data = ByteArray(8192)
@@ -228,22 +252,20 @@ class RealLanguagePackRepository(
                 }
             }
         }
-        tempDest.renameTo(dest)
+        if (tempDest.length() == 0L) {
+            throw Exception("Downloaded file is 0 bytes: $urlStr")
+        }
+        // Rename part file securely
+        Files.move(tempDest.toPath(), dest.toPath(), StandardCopyOption.ATOMIC_MOVE)
     }
 
     override suspend fun cancelDownload(code: LanguageCode) {
         downloadJobs[code]?.cancelAndJoin()
         downloadJobs.remove(code)
-        
-        val dir = storage.packDirectory(code)
-        File(dir, "model.int8.onnx.tmp").delete()
-        File(dir, "tokens.txt.tmp").delete()
-        File(dir, "tts_model.onnx.tmp").delete()
-        File(dir, "lexicon.txt.tmp").delete()
-        File(dir, "tts_tokens.txt.tmp").delete()
-        
-        updateState(code, LanguagePackInstallState.NOT_INSTALLED, true)
-        updateState(code, LanguagePackInstallState.NOT_INSTALLED, false)
+
+        val tmpDir = File(storage.packDirectory(code), ".install_tmp")
+        tmpDir.deleteRecursively()
+
         updateProgress(code, null)
     }
 
@@ -255,7 +277,7 @@ class RealLanguagePackRepository(
             activeLanguage.value = null
         }
     }
-    
+
     private fun updateState(code: LanguageCode, state: LanguagePackInstallState, isStt: Boolean) {
         if (isStt) {
             sttStates.update { it.toMutableMap().apply { put(code, state) } }
@@ -265,7 +287,7 @@ class RealLanguagePackRepository(
     }
 
     private fun updateProgress(code: LanguageCode, progress: Int?) {
-        downloadProgress.update { 
+        downloadProgress.update {
             val newMap = it.toMutableMap()
             if (progress != null) newMap[code] = progress else newMap.remove(code)
             newMap

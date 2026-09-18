@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-iTantra requires off-grid, two-way communication between mobile devices to transmit translated/transcribed speech during network outages. Wi-Fi Direct and Bluetooth Classic are the standard peer-to-peer mechanisms available. 
+iTantra requires off-grid, two-way communication between mobile devices to transmit translated/transcribed speech during network outages. Wi-Fi Direct and Bluetooth Classic are the standard peer-to-peer mechanisms available.
 
 ## Decision
 We elected to implement the first Transport abstraction over **Bluetooth Classic using RFCOMM (SPP)**.

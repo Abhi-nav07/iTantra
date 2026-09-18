@@ -12,7 +12,7 @@
 **Talking Point**: "The app initializes entirely offline. There are no cloud fallbacks enabled or permitted."
 
 ### 2. Language Selection & Readiness
-**Action**: Open the diagnostics or language settings menu. Show the 10 languages (Hindi, English, Bengali, etc.). 
+**Action**: Open the diagnostics or language settings menu. Show the 10 languages (Hindi, English, Bengali, etc.).
 **Talking Point**: "The system natively maps all 10 scheduled languages. Currently, the status indicates `MODEL MISSING`, correctly reflecting the absence of local inference weights to prevent false starts."
 
 ### 3. Secure Peer Transmission

@@ -68,10 +68,10 @@ data class LanguagePackSummary(
     val downloadProgressPercent: Int? = null,
 ) {
     val isActive: Boolean get() = availability == LanguagePackAvailability.ACTIVE
-    
+
     val isSttDownloaded: Boolean get() =
         sttInstallState == LanguagePackInstallState.INSTALLED || sttInstallState == LanguagePackInstallState.UPDATE_AVAILABLE
-        
+
     val isTtsDownloaded: Boolean get() =
         ttsInstallState == LanguagePackInstallState.INSTALLED || ttsInstallState == LanguagePackInstallState.UPDATE_AVAILABLE
 

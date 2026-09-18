@@ -665,7 +665,7 @@ private fun EmergencyQuickPanel(
         Spacer(Modifier.height(Spacing.md))
         Divider(color = TextSecondary.copy(alpha = 0.5f))
         Spacer(Modifier.height(Spacing.md))
-        
+
         Text(
             text = "CRITICAL VOICE MESSAGE",
             style = MaterialTheme.typography.labelMedium,

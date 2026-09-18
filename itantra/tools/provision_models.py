@@ -7,7 +7,7 @@ from huggingface_hub import hf_hub_download
 # Central Model Provisioning Script
 # Ensures that only verified, compatible models are downloaded for Sherpa-ONNX
 
-TARGET_DIR = os.path.join(os.path.dirname(__file__), "..", "app", "src", "main", "assets", "language_packs")
+TARGET_DIR = os.path.join(os.path.dirname(__file__), "..", "provisioned_models")
 os.makedirs(TARGET_DIR, exist_ok=True)
 
 models_to_download = [
@@ -53,12 +53,12 @@ with tempfile.TemporaryDirectory() as tmpdir:
         try:
             tmp_path = hf_hub_download(repo_id=model["repo_id"], filename=model["filename"], local_dir=tmpdir)
             
-            # SHA256 Check (we just log it since we don't have known hashes for all)
+            # SHA256 Check
             checksum = calculate_sha256(tmp_path)
-            print(f"SHA-256: {checksum}")
+            print(f"HASH RECORDED: {checksum}")
             
-            # Atomic install using os.replace
-            os.replace(tmp_path, dest_path)
+            # Atomic install using shutil.move
+            shutil.move(tmp_path, dest_path)
             print(f"Successfully installed to {dest_path}")
             
         except Exception as e:
@@ -67,3 +67,8 @@ with tempfile.TemporaryDirectory() as tmpdir:
             break
 
 print("=== Provisioning Complete ===")
+print("To manually test offline model behavior on a debuggable device, run:")
+print("  adb push provisioned_models/hi /data/local/tmp/hi")
+print("  adb shell run-as com.itantra.app mkdir -p files/language_packs")
+print("  adb shell run-as com.itantra.app cp -r /data/local/tmp/hi files/language_packs/hi")
+print("  adb shell rm -r /data/local/tmp/hi")

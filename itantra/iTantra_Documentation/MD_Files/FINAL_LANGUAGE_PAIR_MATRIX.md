@@ -1,7 +1,7 @@
 # Final Language Pair Matrix
 
 ## Overview
-This matrix represents the physical capability of the system to route and translate between the 10 target languages. 
+This matrix represents the physical capability of the system to route and translate between the 10 target languages.
 
 **Allowed Statuses (Per Prompt constraints):**
 - `BYPASS VERIFIED`

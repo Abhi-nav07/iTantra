@@ -16,7 +16,7 @@ interface LanguagePackRepository {
 
     /** Live view of whichever language is currently ACTIVE, if any. */
     fun observeActiveLanguage(): Flow<LanguageCode?>
-    
+
     /** Live view of the currently selected TARGET language, if any. */
     fun observeTargetLanguage(): Flow<LanguageCode?>
 
@@ -32,7 +32,7 @@ interface LanguagePackRepository {
     suspend fun setActiveLanguage(code: LanguageCode): Boolean
 
     /**
-     * Sets the active target language. Target languages only require the 
+     * Sets the active target language. Target languages only require the
      * cross-language translation model and TTS capability.
      */
     suspend fun setTargetLanguage(code: LanguageCode): Boolean

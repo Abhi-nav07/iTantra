@@ -148,21 +148,21 @@ fun DiagnosticsScreen(
             DiagnosticsSection(title = "LOW-BITRATE VISUALIZATION") {
                 val pcmBytes = state.metrics.stt.audioDurationMs * 32L // 16kHz 16-bit = 32 bytes/ms
                 val pktBytes = (state.metrics.transport.packetBytes as? com.itantra.domain.model.Measurement.Measured)?.value ?: 0
-                
+
                 if (pcmBytes > 0 && pktBytes > 0) {
                     val pcmKb = String.format(java.util.Locale.US, "%.1f KB", pcmBytes / 1024f)
                     val reduction = String.format(java.util.Locale.US, "%.2f%%", 100f * (1f - (pktBytes.toFloat() / pcmBytes.toFloat())))
-                    
+
                     Text("Raw PCM Equivalent", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
                     Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(TextDisabled))
                     Text(pcmKb, style = MaterialTheme.typography.labelSmall, color = TextPrimary)
-                    
+
                     Spacer(Modifier.height(Spacing.sm))
-                    
+
                     Text("iTantra Secure Packet", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
                     Box(modifier = Modifier.fillMaxWidth(if (pcmBytes > 0) kotlin.math.max(0.01f, pktBytes.toFloat() / pcmBytes.toFloat()) else 0.01f).height(16.dp).background(SignalGreen))
                     Text("$pktBytes B", style = MaterialTheme.typography.labelSmall, color = TextPrimary)
-                    
+
                     Spacer(Modifier.height(Spacing.sm))
                     Text("Reduction: $reduction", style = MaterialTheme.typography.labelMedium, color = SignalGreen, fontWeight = FontWeight.Bold)
                 } else {

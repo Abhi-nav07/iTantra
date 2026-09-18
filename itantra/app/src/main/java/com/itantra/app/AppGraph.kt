@@ -24,7 +24,7 @@ import com.itantra.core.translation.TranslationRouter
 
 object AppGraph {
     private var appContext: Context? = null
-    
+
     fun init(context: Context) {
         if (appContext == null) {
             appContext = context.applicationContext

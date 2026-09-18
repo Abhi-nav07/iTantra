@@ -5,7 +5,8 @@ Because the local execution environment operates via headless secure containers 
 
 Instead, we optimize the static architecture:
 1. **DeviceCapabilityDetector**: Abstraction introduced to intelligently measure API limits, RAM, and available memory before preloading resources.
-2. **Audio Stream Bounds**: Validated MicrophoneAudioSource.kt employs eplay = 0 on its SharedFlow, bounding infinite accumulation loops.
+2. **Audio Stream Bounds**: Validated MicrophoneAudioSource.kt employs
+eplay = 0 on its SharedFlow, bounding infinite accumulation loops.
 3. **MT Tokens Bounded**: RealTranslationEngine.kt auto-regressive generation is strictly hard-capped at 128 max tokens.
 
 ## OOM / ANR Prevention

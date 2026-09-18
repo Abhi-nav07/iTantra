@@ -52,7 +52,7 @@ class LanguageCatalogTest {
         assertEquals("en", LanguageCode.ENGLISH.wireCode)
         assertEquals("or", LanguageCode.ODIA.wireCode)
         assertEquals("kn", LanguageCode.KANNADA.wireCode)
-        
+
         val hasKt = LanguageCatalog.all.any { it.code.wireCode == "kt" }
         org.junit.Assert.assertFalse("No language should use 'kt' as code", hasKt)
     }

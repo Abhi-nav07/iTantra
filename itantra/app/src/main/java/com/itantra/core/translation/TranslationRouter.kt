@@ -11,7 +11,7 @@ class TranslationRouter(private val engine: TranslationEngine?) {
 
     /**
      * Routes the incoming text for translation if the source language differs from the target language.
-     * If the translation engine is unavailable, fails, or the languages are the same, 
+     * If the translation engine is unavailable, fails, or the languages are the same,
      * it immediately returns the original text to guarantee uninterrupted communication.
      */
     suspend fun routeAndTranslate(
@@ -39,7 +39,7 @@ class TranslationRouter(private val engine: TranslationEngine?) {
             }
         }
 
-        if (!engine.supportedSourceLanguages.contains(source) || 
+        if (!engine.supportedSourceLanguages.contains(source) ||
             !engine.supportedTargetLanguages.contains(target)) {
             return TranslationResult(text, "", false, source, target, error = "UNSUPPORTED_ROUTE")
         }

@@ -38,5 +38,5 @@ Every `.wav` or `.pcm` file must have an entry in `metadata.csv` capturing:
 - **CRITICAL RULE**: TEST recordings/speakers MUST NEVER be used during training. The split should ideally be **speaker-disjoint** (i.e. speakers in the TEST set do not appear in the TRAIN set) to prove generalization to unseen voices.
 
 ## Immediate User Tasks (Baseline)
-For the immediate 6B-1 baseline validation, the tester must provide 10–20 manually recorded utterances encompassing the diverse categories above (e.g. "मुख्य सड़क बंद है।"). 
+For the immediate 6B-1 baseline validation, the tester must provide 10–20 manually recorded utterances encompassing the diverse categories above (e.g. "मुख्य सड़क बंद है।").
 *Do not generate artificial audio via TTS to serve as human baseline data.*

@@ -55,7 +55,7 @@ object PacketEncoder {
     fun encode(packet: ItantraPacket): ByteArray {
         val payloadLen = packet.payload.size
         // 32 bytes header + N payload + 4 CRC
-        val frameContentLength = 32 + payloadLen + 4 
+        val frameContentLength = 32 + payloadLen + 4
         val totalFrameLength = 4 + frameContentLength // including the 4 byte frame size prefix
 
         val buffer = ByteBuffer.allocate(totalFrameLength).order(ByteOrder.BIG_ENDIAN)

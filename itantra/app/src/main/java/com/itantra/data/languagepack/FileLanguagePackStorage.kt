@@ -24,9 +24,21 @@ class FileLanguagePackStorage(
 
     override fun isInstalled(code: LanguageCode): Boolean {
         val dir = packDirectory(code)
-        // Basic check: if directory exists and has files, consider it installed
-        // In a production app, we'd check for specific manifest/model files here.
-        return dir.exists() && (dir.listFiles()?.isNotEmpty() == true)
+        if (!dir.exists()) return false
+
+        val sttSpec = com.itantra.core.inference.ModelFileSpecs.getSttSpec(code)
+        val sttOk = sttSpec?.requiredFiles?.all {
+            val f = File(File(dir, "stt"), it)
+            f.exists() && f.length() > 0
+        } == true
+
+        val ttsSpec = com.itantra.core.inference.ModelFileSpecs.getTtsSpec(code)
+        val ttsOk = ttsSpec?.requiredFiles?.all {
+            val f = File(File(dir, "tts"), it)
+            f.exists() && f.length() > 0
+        } == true
+
+        return sttOk || ttsOk
     }
 
     override suspend fun verifyChecksums(

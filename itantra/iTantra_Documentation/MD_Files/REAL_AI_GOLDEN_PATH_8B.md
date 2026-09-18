@@ -20,7 +20,7 @@ The local environment lacks physical devices, the AVD emulator (emulator.exe), a
 - **Model Quantization/Execution:** STUB EXECUTIONS REMOVED, BUT REAL INFERENCE BLOCKED DUE TO MISSING TENSORS.
 
 ## Reproducible Provisioning Strategy
-Because automated local provisioning is blocked, the exact commands to produce the Golden Path have been isolated in 	ools/provision_models.py. 
+Because automated local provisioning is blocked, the exact commands to produce the Golden Path have been isolated in 	ools/provision_models.py.
 
 This script natively fetches the verified models:
 - **STT:** indicconformer-sherpa-onnx (Hindi, English)

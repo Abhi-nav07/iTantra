@@ -35,20 +35,20 @@ class ContinuousListenEngine(private val context: Context) {
     val lastSegment: StateFlow<AudioSegment?> = _lastSegment.asStateFlow()
 
     private var vad: Vad? = null
-    
+
     // Config values
     private val sampleRate = 16000
-    
+
     // Fallback manual tracker if VAD doesn't output segment
     private var isSpeechActive = false
     private val activeUtterance = mutableListOf<FloatArray>()
-    
+
     fun start() {
         if (_state.value != ContinuousListenState.OFF && _state.value != ContinuousListenState.ERROR && _state.value != ContinuousListenState.SEGMENT_READY) {
             return
         }
         _state.value = ContinuousListenState.STARTING
-        
+
         try {
             // Copy silero_vad.onnx to cache if not exists, as asset cannot be accessed via path directly by C++
             val cacheDir = context.cacheDir
@@ -74,14 +74,14 @@ class ContinuousListenEngine(private val context: Context) {
                 numThreads = 1
                 debug = false
             }
-            
+
             // Re-initialize VAD
             vad?.release()
             vad = Vad(config = config)
-            
+
             activeUtterance.clear()
             isSpeechActive = false
-            
+
             _state.value = ContinuousListenState.LISTENING
         } catch (e: Exception) {
             Log.e("ContinuousListenEngine", "Failed to start VAD", e)
@@ -109,14 +109,14 @@ class ContinuousListenEngine(private val context: Context) {
 
     fun feedAudio(samples: FloatArray) {
         if (_state.value == ContinuousListenState.OFF || _state.value == ContinuousListenState.ERROR) return
-        
+
         val currentVad = vad ?: return
 
-        // Feed to VAD. Note: Silero VAD requires chunks of 512 samples. 
-        // MicrophoneAudioSource emits in 2048 or 4096 chunks. 
+        // Feed to VAD. Note: Silero VAD requires chunks of 512 samples.
+        // MicrophoneAudioSource emits in 2048 or 4096 chunks.
         // sherpa-onnx `acceptWaveform` handles buffering internally for VAD inference.
         currentVad.acceptWaveform(samples)
-        
+
         if (currentVad.isSpeechDetected()) {
             if (!isSpeechActive) {
                 isSpeechActive = true
@@ -129,29 +129,29 @@ class ContinuousListenEngine(private val context: Context) {
             // A segment is ready!
             val segment = currentVad.front()
             currentVad.pop()
-            
+
             // The segment.samples from Sherpa-Onnx already contains the utterance.
             // We can just use it directly! Sherpa-ONNX's Silero implementation maintains its own buffer.
             val segmentSamples = segment.samples
-            
+
             val durationMs = (segmentSamples.size.toLong() * 1000) / sampleRate
-            
+
             Log.d("ContinuousListenEngine", "VAD produced segment: ${segmentSamples.size} samples, ${durationMs}ms")
-            
+
             _lastSegment.value = AudioSegment(
                 samples = segmentSamples,
                 durationMs = durationMs,
                 sampleRate = sampleRate
             )
-            
+
             // Reset our manual tracking since Sherpa-ONNX handled it
             isSpeechActive = false
             activeUtterance.clear()
-            
+
             _state.value = ContinuousListenState.SEGMENT_READY
         }
-        
-        // If we were in SEGMENT_READY and no new segment popped, we revert to LISTENING 
+
+        // If we were in SEGMENT_READY and no new segment popped, we revert to LISTENING
         // to show we are waiting again (unless we manually stopped).
         if (_state.value == ContinuousListenState.SEGMENT_READY && currentVad.empty()) {
             _state.value = ContinuousListenState.LISTENING

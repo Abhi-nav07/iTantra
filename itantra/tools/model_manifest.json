@@ -7,7 +7,8 @@
     "runtime": "sherpa-onnx",
     "license": "Apache 2.0",
     "source_url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-tiny",
-    "verified": true
+    "verified": true,
+    "sha256": null
   },
   {
     "language": "en",
@@ -17,7 +18,8 @@
     "runtime": "sherpa-onnx",
     "license": "Apache 2.0",
     "source_url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-tiny",
-    "verified": true
+    "verified": true,
+    "sha256": null
   },
   {
     "language": "hi",
@@ -27,7 +29,8 @@
     "runtime": "sherpa-onnx",
     "license": "MIT",
     "source_url": "https://huggingface.co/csukuangfj/vits-piper-hi_IN-pratham-medium",
-    "verified": true
+    "verified": true,
+    "sha256": null
   },
   {
     "language": "en",
@@ -37,6 +40,7 @@
     "runtime": "sherpa-onnx",
     "license": "MIT",
     "source_url": "https://huggingface.co/csukuangfj/vits-piper-en_US-amy-medium",
-    "verified": true
+    "verified": true,
+    "sha256": null
   }
 ]
