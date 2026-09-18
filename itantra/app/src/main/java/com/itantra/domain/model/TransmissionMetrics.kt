@@ -7,6 +7,9 @@ package com.itantra.domain.model
  */
 data class TransmissionMetrics(
     val payloadBytes: Measurement<Int> = Measurement.NotMeasured,
+    val semanticPayloadBytes: Measurement<Int> = Measurement.NotMeasured,
+    val secureBytes: Measurement<Int> = Measurement.NotMeasured,
+    val finalFrameBytes: Measurement<Int> = Measurement.NotMeasured,
     val packetBytes: Measurement<Int> = Measurement.NotMeasured,
     val transmissionLatencyMillis: Measurement<Long> = Measurement.NotMeasured,
 )

@@ -15,11 +15,11 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import android.os.SystemClock
+import android.annotation.SuppressLint
 
 import com.itantra.core.inference.MicrophoneAudioSource
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.catch
 
 @Serializable
 data class BenchmarkSentenceDef(
@@ -41,6 +41,7 @@ data class BenchmarkState(
     val lastResult: BenchmarkResult? = null
 )
 
+@SuppressLint("StaticFieldLeak")
 class BenchmarkViewModel(
     private val context: Context,
     private val activeLanguageSessionManager: ActiveLanguageSessionManager,
@@ -96,11 +97,13 @@ class BenchmarkViewModel(
                     stopRecording()
                 }
             }
-            audioSource.stream
-                .catch { e -> e.printStackTrace() }
-                .collect { samples ->
+            try {
+                audioSource.stream.collect { samples ->
                     engine.feed(samples)
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
     

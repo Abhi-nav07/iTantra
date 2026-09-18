@@ -35,6 +35,7 @@ enum class PttVisualState {
     DELIVERED,
     ERROR,
     DISABLED,
+    CRITICAL_READY
 }
 
 /**
@@ -79,6 +80,7 @@ fun PttButton(
             PttVisualState.DELIVERED -> PttStyle(SignalGreen, Color.Transparent, "DELIVERED", SignalGreen)
             PttVisualState.ERROR -> PttStyle(CriticalRed, CriticalSurface, "ERROR", CriticalRed)
             PttVisualState.DISABLED -> PttStyle(TextDisabled, Color.Transparent, "UNAVAILABLE", TextDisabled)
+            PttVisualState.CRITICAL_READY -> PttStyle(CriticalRed, CriticalRed.copy(alpha = 0.2f), "HOLD TO TALK\n(CRITICAL)", CriticalRed)
         }
     }
 
@@ -145,5 +147,6 @@ fun derivePttState(
     lastLocalMessageState == MessageState.DELIVERED -> PttVisualState.DELIVERED
     lastLocalMessageState == MessageState.REMOTE_PLAYBACK_CONFIRMED -> PttVisualState.DELIVERED
     lastLocalMessageState == MessageState.ERROR -> PttVisualState.ERROR
+    lastLocalMessageState == MessageState.WAITING_USER_CONFIRMATION -> PttVisualState.PROCESSING
     else -> PttVisualState.READY
 }

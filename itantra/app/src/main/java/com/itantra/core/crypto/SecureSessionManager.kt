@@ -57,11 +57,12 @@ class SecureSessionManager {
 
         val kp = CryptoPrimitives.generateEcdhKeyPair()
         localKeyPair = kp
-        localNonce = CryptoPrimitives.generateRandomNonce(16)
+        val lNonce = CryptoPrimitives.generateRandomNonce(16)
+        localNonce = lNonce
         
         val pubKeyBytes = kp.public.encoded
         val payload = ByteBuffer.allocate(pubKeyBytes.size + 16).order(ByteOrder.BIG_ENDIAN)
-            .put(localNonce!!)
+            .put(lNonce)
             .put(pubKeyBytes)
             .array()
             
@@ -104,7 +105,8 @@ class SecureSessionManager {
     
     private fun deriveSessionMaterial() {
         try {
-            val localPrivKey = localKeyPair?.private ?: return
+            val localKp = localKeyPair ?: return
+            val localPrivKey = localKp.private
             val peerPubKey = peerPublicKeyBytes ?: return
             val lNonce = localNonce ?: return
             val pNonce = peerNonce ?: return
@@ -113,9 +115,9 @@ class SecureSessionManager {
             
             // Construct canonical transcript: Initiator PubKey + Initiator Nonce + Responder PubKey + Responder Nonce
             val transcript = if (isInitiator) {
-                localKeyPair!!.public.encoded + lNonce + peerPubKey + pNonce
+                localKp.public.encoded + lNonce + peerPubKey + pNonce
             } else {
-                peerPubKey + pNonce + localKeyPair!!.public.encoded + lNonce
+                peerPubKey + pNonce + localKp.public.encoded + lNonce
             }
             val transcriptHash = CryptoPrimitives.sha256(transcript)
             

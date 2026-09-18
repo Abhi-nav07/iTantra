@@ -1,5 +1,6 @@
 package com.itantra.core.transport.packet
 
+import com.itantra.domain.model.TranslationMode
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.zip.CRC32
@@ -47,7 +48,7 @@ object PacketDecoder {
         }
 
         val version = buffer.get()
-        if (version != PacketEncoder.VERSION) {
+        if (version != 1.toByte() && version != 2.toByte()) {
             throw PacketDecodeException("Unsupported Protocol Version: $version")
         }
 
@@ -55,7 +56,18 @@ object PacketDecoder {
         val type = PacketType.fromId(typeId) ?: throw PacketDecodeException("Unknown Message Type: $typeId")
 
         val flags = buffer.get()
-        val langId = buffer.get()
+        val legacyLangId = buffer.get()
+        
+        var sourceLangId: Byte = legacyLangId
+        var targetLangId: Byte = legacyLangId
+        var translationModeId: Byte = TranslationMode.NONE.id
+        
+        if (version == 2.toByte()) {
+            sourceLangId = buffer.get()
+            targetLangId = buffer.get()
+            translationModeId = buffer.get()
+        }
+
         val messageId = buffer.getLong()
         val securityVersion = buffer.get()
         val counter = buffer.getLong()
@@ -78,7 +90,10 @@ object PacketDecoder {
         return ItantraPacket(
             type = type,
             flags = flags,
-            languageCode = ProtocolLanguageMapper.fromWireId(langId),
+            languageCode = ProtocolLanguageMapper.fromWireId(legacyLangId),
+            sourceLanguage = ProtocolLanguageMapper.fromWireId(sourceLangId),
+            targetLanguage = ProtocolLanguageMapper.fromWireId(targetLangId),
+            translationMode = TranslationMode.fromId(translationModeId),
             messageId = messageId,
             securityVersion = securityVersion,
             counter = counter,

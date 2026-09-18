@@ -12,13 +12,15 @@ import com.itantra.data.languagepack.FileLanguagePackStorage
 import com.itantra.data.languagepack.LanguagePackManifestParser
 import com.itantra.data.languagepack.RealLanguagePackRepository
 import com.itantra.domain.model.LanguageCode
-import com.itantra.domain.model.SpeechSynthesisResult
 import com.itantra.domain.repository.LanguagePackRepository
 import com.itantra.data.benchmark.LocalBenchmarkRepository
-import com.itantra.core.transport.BluetoothTransportEngine
+
 import android.bluetooth.BluetoothManager
 import com.itantra.core.crypto.SecureSessionManager
 import com.itantra.core.transceiver.TransceiverCoordinator
+import com.itantra.core.translation.RealTranslationEngine
+import com.itantra.core.translation.TranslationEngine
+import com.itantra.core.translation.TranslationRouter
 
 object AppGraph {
     private var appContext: Context? = null
@@ -61,16 +63,33 @@ object AppGraph {
         ActiveLanguageSessionManager(factory)
     }
 
-    val transportEngine: BluetoothTransportEngine by lazy {
+    val bluetoothPeerTransport: com.itantra.core.transport.peer.BluetoothPeerTransport by lazy {
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        BluetoothTransportEngine(context, bluetoothManager.adapter)
+        com.itantra.core.transport.peer.BluetoothPeerTransport(context, bluetoothManager.adapter)
+    }
+
+    val wifiPeerTransport: com.itantra.core.transport.peer.WifiPeerTransport by lazy {
+        com.itantra.core.transport.peer.WifiPeerTransport()
+    }
+
+    val transportEngine: com.itantra.core.transport.TransportCoordinator by lazy {
+        // Default to Bluetooth initially
+        com.itantra.core.transport.TransportCoordinator(bluetoothPeerTransport)
     }
 
     val secureSessionManager: SecureSessionManager by lazy {
         SecureSessionManager()
     }
 
+    val translationEngine: TranslationEngine by lazy {
+        RealTranslationEngine(context)
+    }
+
+    val translationRouter: TranslationRouter by lazy {
+        TranslationRouter(translationEngine)
+    }
+
     val transceiverCoordinator: TransceiverCoordinator by lazy {
-        TransceiverCoordinator(context, activeLanguageSessionManager, transportEngine, metricsRecorder, secureSessionManager)
+        TransceiverCoordinator(context, activeLanguageSessionManager, languagePackRepository, transportEngine, metricsRecorder, secureSessionManager, translationRouter)
     }
 }

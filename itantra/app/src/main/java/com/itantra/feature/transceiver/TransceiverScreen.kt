@@ -12,6 +12,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -61,6 +63,15 @@ fun TransceiverScreen(
                 activeLanguage = state.activeLanguage?.displayName,
             )
 
+            Spacer(Modifier.height(Spacing.sm))
+
+            LanguageSelectorRow(
+                sourceLanguage = state.activeLanguage,
+                targetLanguage = state.targetLanguage,
+                onSourceSelected = { viewModel.setSourceLanguage(it) },
+                onTargetSelected = { viewModel.setTargetLanguage(it) }
+            )
+
             androidx.compose.animation.AnimatedVisibility(visible = state.connectionState == com.itantra.core.transport.ConnectionState.DISCONNECTED || state.connectionState == com.itantra.core.transport.ConnectionState.ERROR) {
                 Row(
                     modifier = Modifier
@@ -107,7 +118,14 @@ fun TransceiverScreen(
             if (state.mode == TransceiverMode.SOS) {
                 EmergencyQuickPanel(
                     onSendCode = { code -> viewModel.sendEmergencyCode(code) },
+                    onCriticalPttPressed = viewModel::onHoldToTalkCriticalPressed,
+                    onCriticalPttReleased = viewModel::onHoldToTalkReleased,
                     modifier = Modifier.fillMaxWidth(),
+                )
+            } else if (state.mode == TransceiverMode.CONTINUOUS) {
+                ContinuousListenArea(
+                    state = state,
+                    modifier = Modifier.fillMaxWidth()
                 )
             } else {
                 PttArea(
@@ -127,6 +145,25 @@ fun TransceiverScreen(
         }
     }
 
+    val criticalMsg = state.messages.find { it.state == MessageState.WAITING_USER_CONFIRMATION }
+    if (criticalMsg != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelCriticalMessage(criticalMsg.messageId) },
+            title = { Text("Confirm Critical Message", color = CriticalRed) },
+            text = { Text("Are you sure you want to send this message with CRITICAL priority?\n\n\"${criticalMsg.text}\"") },
+            confirmButton = {
+                Button(onClick = { viewModel.confirmCriticalMessage(criticalMsg.messageId) }, colors = ButtonDefaults.buttonColors(containerColor = CriticalRed)) {
+                    Text("SEND CRITICAL", color = Color.White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { viewModel.cancelCriticalMessage(criticalMsg.messageId) }) {
+                    Text("CANCEL")
+                }
+            }
+        )
+    }
+
     // ── SAS Verification Dialog ─────────────────────────────────
     SasVerificationDialog(
         secureState = state.secureState,
@@ -139,6 +176,80 @@ fun TransceiverScreen(
 // ═════════════════════════════════════════════════════════════════
 // COMPOSABLE BUILDING BLOCKS
 // ═════════════════════════════════════════════════════════════════
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguageSelectorRow(
+    sourceLanguage: Language?,
+    targetLanguage: Language?,
+    onSourceSelected: (LanguageCode) -> Unit,
+    onTargetSelected: (LanguageCode) -> Unit
+) {
+    var sourceExpanded by remember { mutableStateOf(false) }
+    var targetExpanded by remember { mutableStateOf(false) }
+
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+        ExposedDropdownMenuBox(
+            expanded = sourceExpanded,
+            onExpandedChange = { sourceExpanded = it },
+            modifier = Modifier.weight(1f)
+        ) {
+            OutlinedTextField(
+                value = sourceLanguage?.displayName ?: "Select",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("I Speak:") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = sourceExpanded) },
+                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                modifier = Modifier.menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = sourceExpanded,
+                onDismissRequest = { sourceExpanded = false }
+            ) {
+                LanguageCatalog.all.forEach { lang ->
+                    DropdownMenuItem(
+                        text = { Text(lang.displayName) },
+                        onClick = {
+                            onSourceSelected(lang.code)
+                            sourceExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        ExposedDropdownMenuBox(
+            expanded = targetExpanded,
+            onExpandedChange = { targetExpanded = it },
+            modifier = Modifier.weight(1f)
+        ) {
+            OutlinedTextField(
+                value = targetLanguage?.displayName ?: "Select",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Receiver Hears:") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = targetExpanded) },
+                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                modifier = Modifier.menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = targetExpanded,
+                onDismissRequest = { targetExpanded = false }
+            ) {
+                LanguageCatalog.all.forEach { lang ->
+                    DropdownMenuItem(
+                        text = { Text(lang.displayName) },
+                        onClick = {
+                            onTargetSelected(lang.code)
+                            targetExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun ProductHeader(
@@ -272,6 +383,40 @@ private fun PttArea(
     }
 }
 
+@Composable
+private fun ContinuousListenArea(
+    state: TransceiverUiState,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .background(SurfaceDarkElevated, ITantraShapes.card)
+            .padding(Spacing.lg),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            val (icon, text, color) = when (state.continuousListenState) {
+                com.itantra.core.inference.ContinuousListenState.OFF -> Triple(Icons.Default.Warning, "Offline", TextSecondary)
+                com.itantra.core.inference.ContinuousListenState.STARTING -> Triple(Icons.Default.Info, "Starting VAD...", SignalGreenDim)
+                com.itantra.core.inference.ContinuousListenState.LISTENING -> Triple(Icons.Default.Info, "Listening for speech...", SignalGreenDim)
+                com.itantra.core.inference.ContinuousListenState.SPEECH_DETECTED -> Triple(Icons.Default.Info, "Speech Detected", SignalGreen)
+                com.itantra.core.inference.ContinuousListenState.FINALIZING -> Triple(Icons.Default.Info, "Finalizing...", SignalGreenDim)
+                com.itantra.core.inference.ContinuousListenState.SEGMENT_READY -> Triple(Icons.Default.Check, "Segment Ready", SecureBlue)
+                com.itantra.core.inference.ContinuousListenState.ERROR -> Triple(Icons.Default.Warning, "VAD Error", CriticalRed)
+            }
+
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(48.dp))
+            Spacer(Modifier.height(Spacing.sm))
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium,
+                color = color,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
 // ── Message List ────────────────────────────────────────────────
 
 @Composable
@@ -340,19 +485,55 @@ private fun MessageItem(msg: TransceiverMessage, onAck: (Long) -> Unit) {
                     Spacer(Modifier.height(Spacing.xs))
 
                     // Message text
-                    Text(
-                        text = msg.text,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = TextPrimary,
-                    )
+                    if (msg.translationStatus == TranslationStatus.SUCCESS && msg.originalText != null) {
+                        Text(
+                            text = "Translated: ${msg.text}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.height(Spacing.xs))
+                        Text(
+                            text = "Recognized: ${msg.originalText}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSecondary,
+                        )
+                    } else {
+                        Text(
+                            text = msg.text,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextPrimary,
+                        )
+                    }
                     Spacer(Modifier.height(Spacing.xs))
 
                     // State label
-                    Text(
-                        text = messageStateLabel(msg.state),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (msg.state == MessageState.ERROR) CriticalRed else SignalGreenDim,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = messageStateLabel(msg.state),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (msg.state == MessageState.ERROR) CriticalRed else SignalGreenDim,
+                        )
+                        if (msg.translationStatus == TranslationStatus.BYPASSED) {
+                            Text(
+                                text = " • BYPASSED",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextSecondary,
+                            )
+                        } else if (msg.translationStatus == TranslationStatus.TRANSLATING) {
+                            Text(
+                                text = " • TRANSLATING",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextSecondary,
+                            )
+                        } else if (msg.translationStatus == TranslationStatus.FAILED) {
+                            Text(
+                                text = " • TRANS. FAILED",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = CriticalRed,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -398,6 +579,7 @@ private fun messageStateLabel(state: MessageState): String = when (state) {
     MessageState.WAITING_ACK -> "Awaiting ACK…"
     MessageState.ACKNOWLEDGED -> "Acknowledged"
     MessageState.ERROR -> "Failed"
+    MessageState.WAITING_USER_CONFIRMATION -> "Pending Confirmation"
 }
 
 // ── Metric Strip ────────────────────────────────────────────────
@@ -438,6 +620,8 @@ private fun MetricStrip(
 @Composable
 private fun EmergencyQuickPanel(
     onSendCode: (EmergencyCode) -> Unit,
+    onCriticalPttPressed: () -> Unit,
+    onCriticalPttReleased: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var confirmCode by remember { mutableStateOf<EmergencyCode?>(null) }
@@ -477,6 +661,25 @@ private fun EmergencyQuickPanel(
             }
             Spacer(Modifier.height(Spacing.sm))
         }
+
+        Spacer(Modifier.height(Spacing.md))
+        Divider(color = TextSecondary.copy(alpha = 0.5f))
+        Spacer(Modifier.height(Spacing.md))
+        
+        Text(
+            text = "CRITICAL VOICE MESSAGE",
+            style = MaterialTheme.typography.labelMedium,
+            color = CriticalRed,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = Spacing.md),
+        )
+
+        PttButton(
+            visualState = PttVisualState.CRITICAL_READY,
+            onPressed = onCriticalPttPressed,
+            onReleased = onCriticalPttReleased,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 
     if (confirmCode != null) {

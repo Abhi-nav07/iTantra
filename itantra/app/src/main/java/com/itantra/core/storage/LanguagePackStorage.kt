@@ -7,7 +7,7 @@ import java.io.File
  * Contract for where a language pack's files live on disk and how their
  * integrity is checked, once real downloads exist.
  *
- * NO IMPLEMENTATION EXISTS YET. [com.itantra.data.languagepack.MockLanguagePackRepository]
+ * NO IMPLEMENTATION EXISTS YET.
  * does not use this — it works entirely from in-memory sample data. This
  * interface exists so the eventual real repository has a clear, testable
  * seam for file I/O rather than mixing storage logic into the repository

@@ -68,4 +68,51 @@ class SecureSessionManagerTest {
         assertEquals(0.toByte(), decryptedPacket.securityVersion)
         assertArrayEquals(originalPacket.payload, decryptedPacket.payload)
     }
+
+    @Test
+    fun testReplayProtection() {
+        // Setup secure session
+        val aliceHello = alice.startHandshake(isInitiator = true)
+        val bobHello = bob.processSecureHello(aliceHello)!!
+        alice.processSecureHello(bobHello)
+        bob.processSecureVerify(alice.confirmSasMatch())
+        alice.processSecureVerify(bob.confirmSasMatch())
+
+        val packet1 = ItantraPacket(type = PacketType.TEXT, messageId = 1L, payload = "Test".toByteArray())
+        val encrypted1 = alice.encrypt(packet1)
+        val decrypted1 = bob.decrypt(encrypted1)
+        assertNotNull(decrypted1)
+
+        // Attempt replay
+        var exceptionThrown = false
+        try {
+            bob.decrypt(encrypted1)
+        } catch (e: SecurityException) {
+            exceptionThrown = true
+        }
+        assertTrue("Replay should throw SecurityException", exceptionThrown)
+    }
+
+    @Test
+    fun testAadMetadataTampering() {
+        val aliceHello = alice.startHandshake(isInitiator = true)
+        val bobHello = bob.processSecureHello(aliceHello)!!
+        alice.processSecureHello(bobHello)
+        bob.processSecureVerify(alice.confirmSasMatch())
+        alice.processSecureVerify(bob.confirmSasMatch())
+
+        val originalPacket = ItantraPacket(type = PacketType.TEXT, messageId = 1L, payload = "Test".toByteArray(), sourceLanguage = com.itantra.domain.model.LanguageCode.HINDI)
+        val encryptedPacket = alice.encrypt(originalPacket)
+
+        // Tamper source language byte
+        val tamperedPacket = encryptedPacket.copy(sourceLanguage = com.itantra.domain.model.LanguageCode.ENGLISH)
+
+        var exceptionThrown = false
+        try {
+            bob.decrypt(tamperedPacket)
+        } catch (e: Exception) {
+            exceptionThrown = true
+        }
+        assertTrue("Metadata tamper should throw Exception due to AAD mismatch", exceptionThrown)
+    }
 }

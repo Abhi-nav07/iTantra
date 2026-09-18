@@ -3,7 +3,6 @@ package com.itantra.data.languagepack
 import android.content.Context
 import android.os.StatFs
 import com.itantra.core.storage.LanguagePackStorage
-import com.itantra.domain.model.Language
 import com.itantra.domain.model.LanguageCatalog
 import com.itantra.domain.model.LanguageCode
 import com.itantra.domain.model.LanguagePackAvailability
@@ -36,7 +35,12 @@ class RealLanguagePackRepository(
 
     private val sttStates = MutableStateFlow(buildInitialSttStates())
     private val ttsStates = MutableStateFlow(buildInitialTtsStates())
-    private val activeLanguage = MutableStateFlow<LanguageCode?>(null)
+    private val activeLanguage = MutableStateFlow<LanguageCode?>(
+        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).getString("source_lang", null)?.let { LanguageCode.valueOf(it) }
+    )
+    private val targetLanguage = MutableStateFlow<LanguageCode?>(
+        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).getString("target_lang", null)?.let { LanguageCode.valueOf(it) }
+    )
     private val downloadProgress = MutableStateFlow<Map<LanguageCode, Int>>(emptyMap())
     private val downloadJobs = mutableMapOf<LanguageCode, Job>()
 
@@ -100,6 +104,8 @@ class RealLanguagePackRepository(
 
     override fun observeActiveLanguage(): Flow<LanguageCode?> = activeLanguage
 
+    override fun observeTargetLanguage(): Flow<LanguageCode?> = targetLanguage
+
     override suspend fun getManifest(code: LanguageCode): LanguagePackManifest? = withContext(Dispatchers.IO) {
         try {
             val json = context.assets.open("language_packs/${code.wireCode}_dev_manifest.json")
@@ -111,10 +117,15 @@ class RealLanguagePackRepository(
     }
 
     override suspend fun setActiveLanguage(code: LanguageCode): Boolean {
-        if (sttStates.value[code] != LanguagePackInstallState.INSTALLED && ttsStates.value[code] != LanguagePackInstallState.INSTALLED) {
-            return false
-        }
+        // Only require that the state is recorded. The inference engine handles actual loading.
         activeLanguage.value = code
+        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).edit().putString("source_lang", code.name).apply()
+        return true
+    }
+
+    override suspend fun setTargetLanguage(code: LanguageCode): Boolean {
+        targetLanguage.value = code
+        context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).edit().putString("target_lang", code.name).apply()
         return true
     }
 

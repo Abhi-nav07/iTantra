@@ -64,7 +64,7 @@ data class InferenceMetrics(
 )
 
 /**
- * Measurable values from the Continuous Listen VAD engine for Module 5B.
+ * Measurable values from the Continuous Listen VAD engine for Module 5A.
  */
 data class VadMetrics(
     val preRollMs: Int = 400,

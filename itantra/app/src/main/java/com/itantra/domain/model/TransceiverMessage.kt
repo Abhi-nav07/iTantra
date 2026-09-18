@@ -14,7 +14,18 @@ enum class MessageState {
     REMOTE_PLAYBACK_CONFIRMED,
     WAITING_ACK,
     ACKNOWLEDGED,
+    WAITING_USER_CONFIRMATION,
     ERROR
+}
+
+enum class TranslationStatus {
+    NONE,
+    BYPASSED,
+    TRANSLATING,
+    SUCCESS,
+    FAILED,
+    UNSUPPORTED,
+    MODEL_MISSING
 }
 
 object MessagePriority {
@@ -31,8 +42,11 @@ enum class MessageSource {
 data class TransceiverMessage(
     val messageId: Long,
     val language: LanguageCode?,
+    val targetLanguage: LanguageCode? = null,
     val priority: Int,
     val text: String,
+    val originalText: String? = null,
+    val translationStatus: TranslationStatus = TranslationStatus.NONE,
     val source: MessageSource,
     val createdAtLocal: Long,
     val state: MessageState,
@@ -40,6 +54,9 @@ data class TransceiverMessage(
     // Metrics per message for E2E traceability
     val sttLatencyMillis: Long = 0,
     val payloadBytes: Int = 0,
+    val semanticBytes: Int = 0,
+    val secureBytes: Int = 0,
+    val finalFrameBytes: Int = 0,
     val packetBytes: Int = 0,
     val rttMillis: Long = 0,
     val peerTtfaMillis: Long = 0,
@@ -51,12 +68,12 @@ data class TransceiverMessage(
     val semanticReductionPercent: Float
         get() {
             if (rawPcmEquivalentBytes == 0) return 0f
-            return 100f * (1.0f - (packetBytes.toFloat() / rawPcmEquivalentBytes.toFloat()))
+            return 100f * (1.0f - (finalFrameBytes.toFloat() / rawPcmEquivalentBytes.toFloat()))
         }
         
     val semanticBitrateBps: Float
         get() {
             if (speechDurationMillis == 0L) return 0f
-            return (packetBytes * 8f) / (speechDurationMillis / 1000f)
+            return (finalFrameBytes * 8f) / (speechDurationMillis / 1000f)
         }
 }

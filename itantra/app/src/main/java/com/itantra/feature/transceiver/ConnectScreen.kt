@@ -30,8 +30,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.itantra.app.ui.components.StatusChip
 import com.itantra.app.ui.theme.*
-import com.itantra.core.transport.BluetoothTransportEngine
 import com.itantra.core.transport.ConnectionState
+import com.itantra.core.transport.TransportCoordinator
+import com.itantra.core.transport.peer.BluetoothPeerTransport
+import com.itantra.core.transport.peer.WifiPeerTransport
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -41,29 +43,44 @@ import kotlinx.coroutines.launch
 data class ConnectUiState(
     val connectionState: ConnectionState = ConnectionState.DISCONNECTED,
     val pairedDevices: List<BluetoothDevice> = emptyList(),
-    val hasPermissions: Boolean = false
+    val hasPermissions: Boolean = false,
+    val transportMode: TransportMode = TransportMode.BLUETOOTH
 )
 
+enum class TransportMode {
+    BLUETOOTH, WIFI
+}
+
 class ConnectViewModel(
-    private val transportEngine: BluetoothTransportEngine,
+    private val transportCoordinator: TransportCoordinator,
+    private val bluetoothTransport: BluetoothPeerTransport,
+    private val wifiTransport: WifiPeerTransport,
     private val bluetoothAdapter: BluetoothAdapter?
 ) : ViewModel() {
 
     private val hasPermissionsState = MutableStateFlow(false)
+    private val transportModeState = MutableStateFlow(TransportMode.BLUETOOTH)
 
     val uiState: StateFlow<ConnectUiState> = combine(
-        transportEngine.observeConnectionState(),
-        hasPermissionsState
-    ) { state, hasPerms ->
+        transportCoordinator.observeConnectionState(),
+        hasPermissionsState,
+        transportModeState
+    ) { state, hasPerms, mode ->
         ConnectUiState(
             connectionState = state,
             pairedDevices = getPairedDevices(hasPerms),
-            hasPermissions = hasPerms
+            hasPermissions = hasPerms,
+            transportMode = mode
         )
     }.stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000), ConnectUiState())
 
     fun updatePermissions(hasPerms: Boolean) {
         hasPermissionsState.value = hasPerms
+    }
+
+    fun setTransportMode(mode: TransportMode) {
+        transportModeState.value = mode
+        disconnect() // disconnect current when switching modes
     }
 
     @SuppressLint("MissingPermission")
@@ -72,21 +89,37 @@ class ConnectViewModel(
         return bluetoothAdapter.bondedDevices.toList()
     }
 
-    fun startServer() {
+    fun startBluetoothServer() {
         viewModelScope.launch {
-            transportEngine.startServer()
+            transportCoordinator.switchTransport(bluetoothTransport)
+            bluetoothTransport.startServer()
         }
     }
 
-    fun connectToDevice(device: BluetoothDevice) {
+    fun connectToBluetoothDevice(device: BluetoothDevice) {
         viewModelScope.launch {
-            transportEngine.connectToDevice(device)
+            transportCoordinator.switchTransport(bluetoothTransport)
+            bluetoothTransport.connectToDevice(device)
+        }
+    }
+    
+    fun startWifiServer(port: Int = WifiPeerTransport.DEFAULT_PORT) {
+        viewModelScope.launch {
+            transportCoordinator.switchTransport(wifiTransport)
+            wifiTransport.startServer(port)
+        }
+    }
+
+    fun connectToWifiDevice(host: String, port: Int = WifiPeerTransport.DEFAULT_PORT) {
+        viewModelScope.launch {
+            transportCoordinator.switchTransport(wifiTransport)
+            wifiTransport.connectToAddress(host, port)
         }
     }
     
     fun disconnect() {
         viewModelScope.launch {
-            transportEngine.disconnect()
+            transportCoordinator.disconnect()
         }
     }
 }
@@ -122,7 +155,7 @@ fun ConnectScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // ── Top Bar ─────────────────────────────────────────────
+        // Top Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -138,8 +171,28 @@ fun ConnectScreen(
             Text("CONNECT PEER", style = MaterialTheme.typography.headlineMedium)
         }
 
+        // Transport Mode Toggle
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Spacing.lg),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            val modes = listOf("Bluetooth" to TransportMode.BLUETOOTH, "Wi-Fi" to TransportMode.WIFI)
+            modes.forEach { (label, mode) ->
+                FilterChip(
+                    selected = state.transportMode == mode,
+                    onClick = { viewModel.setTransportMode(mode) },
+                    label = { Text(label) },
+                    modifier = Modifier.padding(horizontal = Spacing.xs)
+                )
+            }
+        }
+        
+        Spacer(Modifier.height(Spacing.md))
+
         Column(modifier = Modifier.padding(horizontal = Spacing.lg)) {
-            // ── Connection Status ───────────────────────────────
+            // Connection Status
             val (statusLabel, statusColor) = when (state.connectionState) {
                 ConnectionState.CONNECTED -> "CONNECTED" to SignalGreen
                 ConnectionState.CONNECTING -> "CONNECTING…" to WarningAmber
@@ -158,8 +211,7 @@ fun ConnectScreen(
 
             Spacer(Modifier.height(Spacing.xl))
 
-            if (!state.hasPermissions) {
-                // ── Permission Required ─────────────────────────
+            if (state.transportMode == TransportMode.BLUETOOTH && !state.hasPermissions) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -182,13 +234,18 @@ fun ConnectScreen(
                     }
                 }
             } else {
-                // ── Connection Actions ──────────────────────────
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
                 ) {
                     Button(
-                        onClick = viewModel::startServer,
+                        onClick = {
+                            if (state.transportMode == TransportMode.BLUETOOTH) {
+                                viewModel.startBluetoothServer()
+                            } else {
+                                viewModel.startWifiServer()
+                            }
+                        },
                         enabled = state.connectionState == ConnectionState.DISCONNECTED || state.connectionState == ConnectionState.ERROR,
                         modifier = Modifier.weight(1f),
                         shape = ITantraShapes.button,
@@ -205,7 +262,6 @@ fun ConnectScreen(
                     }
                 }
 
-                // ── Listening Indicator ─────────────────────────
                 if (state.connectionState == ConnectionState.LISTENING) {
                     Spacer(Modifier.height(Spacing.lg))
                     Row(
@@ -228,31 +284,65 @@ fun ConnectScreen(
                 }
 
                 Spacer(Modifier.height(Spacing.xxl))
-                Text(
-                    "PAIRED DEVICES",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = TextSecondary,
-                )
-                Spacer(Modifier.height(Spacing.sm))
-
-                if (state.pairedDevices.isEmpty()) {
-                    // Empty state
+                
+                if (state.transportMode == TransportMode.BLUETOOTH) {
                     Text(
-                        "No paired devices found.\nPair a device in Android Bluetooth settings first.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextDisabled,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.xl),
+                        "PAIRED DEVICES",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = TextSecondary,
                     )
-                } else {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
-                        items(state.pairedDevices) { device ->
-                            DeviceItem(
-                                device = device,
-                                isConnecting = state.connectionState == ConnectionState.CONNECTING,
-                                onClick = { viewModel.connectToDevice(device) },
-                            )
+                    Spacer(Modifier.height(Spacing.sm))
+
+                    if (state.pairedDevices.isEmpty()) {
+                        Text(
+                            "No paired devices found.\nPair a device in Android Bluetooth settings first.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextDisabled,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.xl),
+                        )
+                    } else {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                            items(state.pairedDevices) { device ->
+                                DeviceItem(
+                                    device = device,
+                                    isConnecting = state.connectionState == ConnectionState.CONNECTING,
+                                    onClick = { viewModel.connectToBluetoothDevice(device) },
+                                )
+                            }
                         }
+                    }
+                } else {
+                    Text(
+                        "CONNECT TO WI-FI PEER",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = TextSecondary,
+                    )
+                    Spacer(Modifier.height(Spacing.sm))
+                    
+                    var hostIp by remember { mutableStateOf("") }
+                    
+                    OutlinedTextField(
+                        value = hostIp,
+                        onValueChange = { hostIp = it },
+                        label = { Text("Peer IP Address") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    
+                    Spacer(Modifier.height(Spacing.md))
+                    
+                    Button(
+                        onClick = {
+                            if (hostIp.isNotBlank()) {
+                                viewModel.connectToWifiDevice(hostIp)
+                            }
+                        },
+                        enabled = hostIp.isNotBlank() && (state.connectionState == ConnectionState.DISCONNECTED || state.connectionState == ConnectionState.ERROR),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = ITantraShapes.button,
+                    ) {
+                        Text("CONNECT", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                     }
                 }
             }

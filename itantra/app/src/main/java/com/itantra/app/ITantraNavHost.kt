@@ -32,10 +32,8 @@ fun ITantraNavHost(navController: NavHostController = rememberNavController()) {
         startDestination = ITantraDestinations.TRANSCEIVER,
     ) {
         composable(ITantraDestinations.TRANSCEIVER) {
-            val context = LocalContext.current
             val viewModel = viewModelWithFactory {
                 TransceiverViewModel(
-                    context = context,
                     languagePackRepository = AppGraph.languagePackRepository,
                     metricsRecorder = AppGraph.metricsRecorder,
                     transportEngine = AppGraph.transportEngine,
@@ -54,7 +52,9 @@ fun ITantraNavHost(navController: NavHostController = rememberNavController()) {
             val viewModel = viewModelWithFactory {
                 val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager
                 ConnectViewModel(
-                    transportEngine = AppGraph.transportEngine,
+                    transportCoordinator = AppGraph.transportEngine,
+                    bluetoothTransport = AppGraph.bluetoothPeerTransport,
+                    wifiTransport = AppGraph.wifiPeerTransport,
                     bluetoothAdapter = bluetoothManager.adapter
                 )
             }
@@ -65,7 +65,10 @@ fun ITantraNavHost(navController: NavHostController = rememberNavController()) {
         }
         composable(ITantraDestinations.LANGUAGE_PACKS) {
             val viewModel = viewModelWithFactory {
-                LanguagePacksViewModel(repository = AppGraph.languagePackRepository)
+                LanguagePacksViewModel(
+                    repository = AppGraph.languagePackRepository,
+                    sessionManager = AppGraph.activeLanguageSessionManager
+                )
             }
             LanguagePacksScreen(
                 viewModel = viewModel,

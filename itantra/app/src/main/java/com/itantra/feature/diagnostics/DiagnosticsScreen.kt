@@ -62,13 +62,13 @@ fun DiagnosticsScreen(
                 DiagnosticRow("Installed packs", "${state.installedPackCount} / 10")
             }
 
-            // ── VAD SEGMENTATION (Module 5B) ──────────────────────────
-            DiagnosticsSection(title = "VAD SEGMENTATION (Module 5B)") {
+            // ── VAD SEGMENTATION (Module 5A) ──────────────────────────
+            DiagnosticsSection(title = "VAD SEGMENTATION (Module 5A)") {
                 DiagnosticRow("Pre-roll", "${state.metrics.vad.preRollMs} ms")
                 DiagnosticRow("Endpoint silence", "${state.metrics.vad.endpointSilenceMs} ms")
                 DiagnosticRow("Minimum speech", "${state.metrics.vad.minSpeechMs} ms")
                 DiagnosticRow("Maximum utterance", "${state.metrics.vad.maxUtteranceS} s")
-                DiagnosticRow("Last segment", state.metrics.vad.lastSegmentDurationS.display(" s") { String.format("%.2f", it) })
+                DiagnosticRow("Last segment", state.metrics.vad.lastSegmentDurationS.display(" s") { String.format(java.util.Locale.US, "%.2f", it) })
                 DiagnosticRow("Last segment samples", state.metrics.vad.lastSegmentSamples.display(""))
             }
 
@@ -150,8 +150,8 @@ fun DiagnosticsScreen(
                 val pktBytes = (state.metrics.transport.packetBytes as? com.itantra.domain.model.Measurement.Measured)?.value ?: 0
                 
                 if (pcmBytes > 0 && pktBytes > 0) {
-                    val pcmKb = String.format("%.1f KB", pcmBytes / 1024f)
-                    val reduction = String.format("%.2f%%", 100f * (1f - (pktBytes.toFloat() / pcmBytes.toFloat())))
+                    val pcmKb = String.format(java.util.Locale.US, "%.1f KB", pcmBytes / 1024f)
+                    val reduction = String.format(java.util.Locale.US, "%.2f%%", 100f * (1f - (pktBytes.toFloat() / pcmBytes.toFloat())))
                     
                     Text("Raw PCM Equivalent", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
                     Box(modifier = Modifier.fillMaxWidth().height(16.dp).background(TextDisabled))

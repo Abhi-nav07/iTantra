@@ -1,0 +1,15 @@
+﻿id,sourceLanguage,targetLanguage,sourceText,referenceTranslation,category,criticality,notes
+1,en,hi,Do not use the northern road.,उत्तरी सड़क का उपयोग न करें।,ROAD STATUS,CRITICAL,Negation/Direction
+2,en,hi,Five people need immediate medical assistance.,पांच लोगों को तत्काल चिकित्सा सहायता की आवश्यकता है।,MEDICAL,CRITICAL,Numbers
+3,en,hi,The bridge is unsafe.,पुल असुरक्षित है।,ROAD STATUS,CRITICAL,Negation
+4,en,hi,Fire is spreading toward the village.,गांव की ओर आग फैल रही है।,FIRE,HIGH,Hazard
+5,en,hi,Evacuate the eastern building.,पूर्वी इमारत को खाली करें।,EVACUATION,CRITICAL,Action/Direction
+6,en,hi,Do not send the team through the flooded road.,बाढ़ वाली सड़क से टीम को न भेजें।,FLOOD,CRITICAL,Negation/Action
+7,en,hi,Location is 30.3165, 78.0322.,स्थान 30.3165, 78.0322 है।,COORDINATES,CRITICAL,Coordinates preserved
+8,en,hi,Send the ambulance to Haridwar.,एम्बुलेंस को हरिद्वार भेजें।,MEDICAL,HIGH,Code-switch/Place name
+9,en,hi,20 km,२० किमी,DISTANCES,HIGH,Numbers
+10,en,hi,18:30,१८:३०,TIMES,HIGH,Numbers
+11,hi,en,उत्तरी सड़क का उपयोग न करें।,Do not use the northern road.,ROAD STATUS,CRITICAL,Negation/Direction
+12,hi,en,पांच लोगों को तत्काल चिकित्सा सहायता की आवश्यकता है।,Five people need immediate medical assistance.,MEDICAL,CRITICAL,Numbers
+13,hi,ta,उत्तरी सड़क का उपयोग न करें।,வடக்கு சாலையை பயன்படுத்த வேண்டாம்.,ROAD STATUS,CRITICAL,Negation/Direction
+14,ta,hi,வடக்கு சாலையை பயன்படுத்த வேண்டாம்।,उत्तरी सड़क का उपयोग न करें।,ROAD STATUS,CRITICAL,Negation/Direction

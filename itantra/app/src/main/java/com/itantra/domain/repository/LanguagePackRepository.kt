@@ -8,13 +8,6 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Source of truth for what language packs exist, their install state, and
  * which one is active.
- *
- * Task 01 provides exactly one implementation:
- * [com.itantra.data.languagepack.MockLanguagePackRepository], which uses
- * only in-memory sample data — no network, no real files, no download
- * logic. It exists to prove the contract and unblock UI/ViewModel work
- * before a real implementation (backed by DownloadManager/WorkManager +
- * on-disk storage + checksum validation) is built.
  */
 interface LanguagePackRepository {
 
@@ -23,6 +16,9 @@ interface LanguagePackRepository {
 
     /** Live view of whichever language is currently ACTIVE, if any. */
     fun observeActiveLanguage(): Flow<LanguageCode?>
+    
+    /** Live view of the currently selected TARGET language, if any. */
+    fun observeTargetLanguage(): Flow<LanguageCode?>
 
     suspend fun getManifest(code: LanguageCode): LanguagePackManifest?
 
@@ -34,6 +30,12 @@ interface LanguagePackRepository {
      * this only updates the repository's state-of-record.
      */
     suspend fun setActiveLanguage(code: LanguageCode): Boolean
+
+    /**
+     * Sets the active target language. Target languages only require the 
+     * cross-language translation model and TTS capability.
+     */
+    suspend fun setTargetLanguage(code: LanguageCode): Boolean
 
     // --- Not implemented in Task 01. Declared so the UI/domain layer can
     // already depend on a stable contract; calling these throws

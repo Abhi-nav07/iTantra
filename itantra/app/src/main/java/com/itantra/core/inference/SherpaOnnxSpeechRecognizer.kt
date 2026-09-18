@@ -2,14 +2,11 @@ package com.itantra.core.inference
 
 import android.app.ActivityManager
 import android.content.Context
-import android.os.Debug
 import android.os.SystemClock
-import android.util.Log
 import com.itantra.core.metrics.MetricsRecorder
 import com.itantra.core.storage.LanguagePackStorage
 import com.itantra.domain.model.LanguageCode
 import com.itantra.domain.model.SpeechRecognitionResult
-import com.itantra.domain.model.Measurement
 import com.k2fsa.sherpa.onnx.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

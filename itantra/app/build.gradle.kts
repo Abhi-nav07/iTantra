@@ -55,6 +55,10 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        jniLibs {
+            pickFirsts.add("**/libonnxruntime.so")
+            pickFirsts.add("**/libc++_shared.so")
+        }
     }
 }
 
@@ -85,6 +89,9 @@ dependencies {
     // --- Speech Recognition Engine ---
     implementation(files("libs/sherpa-onnx.aar"))
 
+    // --- Translation Engine (ONNX Runtime) ---
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.1")
+
     // --- Testing ---
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
@@ -96,3 +103,4 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
+

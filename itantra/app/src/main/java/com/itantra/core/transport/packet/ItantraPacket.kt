@@ -1,6 +1,7 @@
 package com.itantra.core.transport.packet
 
 import com.itantra.domain.model.LanguageCode
+import com.itantra.domain.model.TranslationMode
 
 /**
  * iTantra Semantic Packet Protocol (ITP v1).
@@ -8,8 +9,11 @@ import com.itantra.domain.model.LanguageCode
  */
 data class ItantraPacket(
     val type: PacketType,
-    val flags: Byte = 0, // 0 = NORMAL, 1 = HIGH
+    val flags: Byte = 0, // 0 = NORMAL, 1 = HIGH, 2 = CRITICAL
     val languageCode: LanguageCode? = null,
+    val sourceLanguage: LanguageCode? = null,
+    val targetLanguage: LanguageCode? = null,
+    val translationMode: TranslationMode = TranslationMode.NONE,
     val messageId: Long,
     val securityVersion: Byte = 0,
     val counter: Long = 0,
@@ -24,6 +28,9 @@ data class ItantraPacket(
         if (type != other.type) return false
         if (flags != other.flags) return false
         if (languageCode != other.languageCode) return false
+        if (sourceLanguage != other.sourceLanguage) return false
+        if (targetLanguage != other.targetLanguage) return false
+        if (translationMode != other.translationMode) return false
         if (messageId != other.messageId) return false
         if (securityVersion != other.securityVersion) return false
         if (counter != other.counter) return false
@@ -36,6 +43,9 @@ data class ItantraPacket(
         var result = type.hashCode()
         result = 31 * result + flags
         result = 31 * result + (languageCode?.hashCode() ?: 0)
+        result = 31 * result + (sourceLanguage?.hashCode() ?: 0)
+        result = 31 * result + (targetLanguage?.hashCode() ?: 0)
+        result = 31 * result + translationMode.hashCode()
         result = 31 * result + messageId.hashCode()
         result = 31 * result + securityVersion.hashCode()
         result = 31 * result + counter.hashCode()

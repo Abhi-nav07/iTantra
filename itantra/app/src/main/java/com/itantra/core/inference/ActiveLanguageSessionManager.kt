@@ -20,9 +20,9 @@ import kotlinx.coroutines.sync.withLock
  *
  * It does NOT itself decide which pack is "installed" (that is
  * [com.itantra.domain.repository.LanguagePackRepository]'s job) and it
- * does NOT construct real engines yet — [EngineFactory] is a placeholder
- * seam for Task 02+ to plug real [SpeechRecognizerEngine] /
- * [SpeechSynthesizerEngine] implementations into, per language.
+ * relies on the [EngineFactory] provided at construction to build real
+ * [SpeechRecognizerEngine] / [SpeechSynthesizerEngine] instances per
+ * language. See [com.itantra.app.AppGraph] for the production wiring.
  *
  * Concurrency: [switchTo] is serialized with a [Mutex] so two rapid
  * language switches can't race and leave two languages' engines loaded at
@@ -116,9 +116,8 @@ class ActiveLanguageSessionManager(
 }
 
 /**
- * Seam for constructing real engines per language. Task 01 ships only
- * [NoOp], which throws — there is no real STT/TTS engine to construct
- * yet, and this manager must not silently pretend otherwise.
+ * Seam for constructing real engines per language. [NoOp] exists as a
+ * safe default for tests; production wiring is in [com.itantra.app.AppGraph].
  */
 interface EngineFactory {
     fun createRecognizer(language: LanguageCode): SpeechRecognizerEngine?

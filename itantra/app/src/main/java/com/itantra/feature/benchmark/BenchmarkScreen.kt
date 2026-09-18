@@ -166,10 +166,10 @@ fun BenchmarkActiveView(
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Last Result Metrics", style = MaterialTheme.typography.titleSmall)
                 Divider(modifier = Modifier.padding(vertical = 4.dp))
-                Text("WER: ${String.format("%.1f", result.wer * 100)}%")
+                Text("WER: ${String.format(java.util.Locale.US, "%.1f", result.wer * 100)}%")
                 Text("Audio: ${result.audioDurationMs} ms")
                 Text("STT Final: ${result.processingMs} ms")
-                Text("RTF: ${String.format("%.2f", result.rtf)}")
+                Text("RTF: ${String.format(java.util.Locale.US, "%.2f", result.rtf)}")
             }
         }
     }
@@ -205,8 +205,8 @@ fun BenchmarkSummaryView(state: BenchmarkState) {
             Text("Sessions: ${state.results.size}", style = MaterialTheme.typography.bodyLarge)
             Text("Valid: ${validResults.size}", style = MaterialTheme.typography.bodyLarge)
             Divider(modifier = Modifier.padding(vertical = 8.dp))
-            Text("Mean WER: ${String.format("%.1f", avgWer * 100)}%")
-            Text("Median WER: ${String.format("%.1f", medWer * 100)}%")
+            Text("Mean WER: ${String.format(java.util.Locale.US, "%.1f", avgWer * 100)}%")
+            Text("Median WER: ${String.format(java.util.Locale.US, "%.1f", medWer * 100)}%")
             Text("Median Final Latency: $medLatency ms")
             Text("P95 Final Latency: $p95Latency ms")
         }

@@ -1,6 +1,5 @@
 package com.itantra.feature.transceiver
 
-import android.content.Context
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -26,6 +25,7 @@ enum class TransceiverMode { PTT, CONTINUOUS, SOS }
 
 data class TransceiverUiState(
     val activeLanguage: Language? = null,
+    val targetLanguage: Language? = null,
     val mode: TransceiverMode = TransceiverMode.PTT,
     val isTransmitting: Boolean = false,
     val metrics: InferenceMetrics = InferenceMetrics(),
@@ -36,11 +36,11 @@ data class TransceiverUiState(
     val messages: List<TransceiverMessage> = emptyList(),
     val peerCapabilities: PeerCapabilities = PeerCapabilities(),
     val secureState: SecureSessionState = SecureSessionState.NO_SESSION,
-    val sasCode: String? = null
+    val sasCode: String? = null,
+    val continuousListenState: com.itantra.core.inference.ContinuousListenState = com.itantra.core.inference.ContinuousListenState.OFF
 )
 
 class TransceiverViewModel(
-    private val context: Context,
     private val languagePackRepository: LanguagePackRepository,
     private val metricsRecorder: MetricsRecorder,
     private val transportEngine: TransportEngine,
@@ -54,6 +54,7 @@ class TransceiverViewModel(
 
     val uiState: StateFlow<TransceiverUiState> = combine(
         languagePackRepository.observeActiveLanguage(),
+        languagePackRepository.observeTargetLanguage(),
         modeState,
         isTransmittingState,
         metricsRecorder.latest,
@@ -63,20 +64,23 @@ class TransceiverViewModel(
         coordinator.messages,
         coordinator.peerCapabilities,
         coordinator.secureSessionManager.state,
-        coordinator.secureSessionManager.sasCode
+        coordinator.secureSessionManager.sasCode,
+        coordinator.continuousListenEngine.state
     ) { args: Array<Any?> ->
         val activeCode = args[0] as com.itantra.domain.model.LanguageCode?
-        val mode = args[1] as TransceiverMode
-        val isTransmitting = args[2] as Boolean
-        val metrics = args[3] as com.itantra.domain.model.InferenceMetrics
-        val partial = args[4] as String
-        val finalTxt = args[5] as String
-        val connState = args[6] as ConnectionState
+        val targetCode = args[1] as com.itantra.domain.model.LanguageCode?
+        val mode = args[2] as TransceiverMode
+        val isTransmitting = args[3] as Boolean
+        val metrics = args[4] as com.itantra.domain.model.InferenceMetrics
+        val partial = args[5] as String
+        val finalTxt = args[6] as String
+        val connState = args[7] as ConnectionState
         @Suppress("UNCHECKED_CAST")
-        val messagesList = args[7] as List<TransceiverMessage>
-        val caps = args[8] as PeerCapabilities
-        val secureState = args[9] as SecureSessionState
-        val sasCode = args[10] as String?
+        val messagesList = args[8] as List<TransceiverMessage>
+        val caps = args[9] as PeerCapabilities
+        val secureState = args[10] as SecureSessionState
+        val sasCode = args[11] as String?
+        val continuousListenState = args[12] as com.itantra.core.inference.ContinuousListenState
 
         val connLabel = when (connState) {
             ConnectionState.CONNECTED -> "CONNECTED"
@@ -88,6 +92,7 @@ class TransceiverViewModel(
 
         TransceiverUiState(
             activeLanguage = activeCode?.let { LanguageCatalog.byCode(it) },
+            targetLanguage = targetCode?.let { LanguageCatalog.byCode(it) },
             mode = mode,
             isTransmitting = isTransmitting,
             metrics = metrics,
@@ -98,7 +103,8 @@ class TransceiverViewModel(
             messages = messagesList,
             peerCapabilities = caps,
             secureState = secureState,
-            sasCode = sasCode
+            sasCode = sasCode,
+            continuousListenState = continuousListenState
         )
     }.stateIn(
         scope = viewModelScope,
@@ -143,23 +149,27 @@ class TransceiverViewModel(
         coordinator.sendHumanAck(msgId)
     }
 
-
-
-    fun sendManualTestText(text: String) {
+    fun setSourceLanguage(code: com.itantra.domain.model.LanguageCode) {
         viewModelScope.launch {
-            if (transportEngine.isConnected && text.isNotBlank()) {
-                finalTranscriptState.value = "You: $text"
-                // For test sending directly if needed without coordinator,
-                // but actually we should just inject it through coordinator if possible.
-                // Keeping this simple for the test box.
-                val payload = text.toByteArray(Charsets.UTF_8)
-                val txMetrics = transportEngine.send(com.itantra.core.transport.packet.ItantraPacket(
-                    type = com.itantra.core.transport.packet.PacketType.TEXT,
-                    messageId = SystemClock.elapsedRealtime(),
-                    payload = payload
-                ))
-                metricsRecorder.recordTransmission(txMetrics)
-            }
+            languagePackRepository.setActiveLanguage(code)
         }
+    }
+
+    fun setTargetLanguage(code: com.itantra.domain.model.LanguageCode) {
+        viewModelScope.launch {
+            languagePackRepository.setTargetLanguage(code)
+        }
+    }
+
+    fun onHoldToTalkCriticalPressed() {
+        coordinator.startRecording(isCritical = true)
+    }
+
+    fun confirmCriticalMessage(msgId: Long) {
+        coordinator.sendVoiceMessage(msgId)
+    }
+
+    fun cancelCriticalMessage(msgId: Long) {
+        coordinator.cancelMessage(msgId)
     }
 }

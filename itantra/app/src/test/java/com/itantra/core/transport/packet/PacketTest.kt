@@ -14,7 +14,10 @@ class PacketTest {
         val packet = ItantraPacket(
             type = PacketType.TEXT,
             flags = 0,
-            languageCode = LanguageCode.HINDI,
+            languageCode = LanguageCode.ENGLISH,
+            sourceLanguage = LanguageCode.HINDI,
+            targetLanguage = LanguageCode.ENGLISH,
+            translationMode = com.itantra.domain.model.TranslationMode.DIRECT,
             messageId = 123456789L,
             payload = payload
         )
@@ -32,7 +35,10 @@ class PacketTest {
         val decoded = PacketDecoder.decode(frameData)
 
         assertEquals(packet, decoded)
-        assertEquals(LanguageCode.HINDI, decoded.languageCode)
+        assertEquals(LanguageCode.ENGLISH, decoded.languageCode)
+        assertEquals(LanguageCode.HINDI, decoded.sourceLanguage)
+        assertEquals(LanguageCode.ENGLISH, decoded.targetLanguage)
+        assertEquals(com.itantra.domain.model.TranslationMode.DIRECT, decoded.translationMode)
         assertArrayEquals(payload, decoded.payload)
     }
 
