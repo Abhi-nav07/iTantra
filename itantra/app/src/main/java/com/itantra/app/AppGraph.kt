@@ -18,8 +18,6 @@ import com.itantra.data.benchmark.LocalBenchmarkRepository
 import android.bluetooth.BluetoothManager
 import com.itantra.core.crypto.SecureSessionManager
 import com.itantra.core.transceiver.TransceiverCoordinator
-import com.itantra.core.translation.RealTranslationEngine
-import com.itantra.core.translation.TranslationEngine
 import com.itantra.core.translation.TranslationRouter
 
 object AppGraph {
@@ -81,8 +79,10 @@ object AppGraph {
         SecureSessionManager()
     }
 
-    val translationEngine: TranslationEngine by lazy {
-        RealTranslationEngine(context)
+    val translationEngine: com.itantra.core.translation.TranslationEngine by lazy {
+        com.itantra.core.translation.CTranslate2TranslationEngine().apply {
+            init(java.io.File(context.filesDir, "translation_models"))
+        }
     }
 
     val translationRouter: TranslationRouter by lazy {

@@ -19,6 +19,13 @@ android {
         versionName = "0.1.0-task01"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                cppFlags("-std=c++17 -O3")
+                abiFilters("arm64-v8a")
+            }
+        }
     }
 
     buildTypes {
@@ -60,6 +67,12 @@ android {
             pickFirsts.add("**/libc++_shared.so")
         }
     }
+
+    externalNativeBuild {
+        cmake {
+            path("src/main/cpp/CMakeLists.txt")
+        }
+    }
 }
 
 dependencies {
@@ -89,8 +102,8 @@ dependencies {
     // --- Speech Recognition Engine ---
     implementation(files("libs/sherpa-onnx.aar"))
 
-    // --- Translation Engine (ONNX Runtime) ---
-    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.1")
+    // --- Translation Engine (CTranslate2 Native) ---
+    // (Built via CMake)
 
     // --- Testing ---
     testImplementation("junit:junit:4.13.2")

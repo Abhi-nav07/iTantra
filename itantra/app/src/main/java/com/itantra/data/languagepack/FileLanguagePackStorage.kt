@@ -28,7 +28,12 @@ class FileLanguagePackStorage(
 
         val sttSpec = com.itantra.core.inference.ModelFileSpecs.getSttSpec(code)
         val sttOk = sttSpec?.requiredFiles?.all {
-            val f = File(File(dir, "stt"), it)
+            val baseDir = if (sttSpec.isShared && sttSpec.sharedPath != null) {
+                File(packsDir, sttSpec.sharedPath)
+            } else {
+                File(dir, "stt")
+            }
+            val f = File(baseDir, it)
             f.exists() && f.length() > 0
         } == true
 

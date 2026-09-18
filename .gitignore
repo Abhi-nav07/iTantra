@@ -8,3 +8,7 @@ itantra/jdk-17.0.2/
 
 /itantra/gradle-8.5/
 /itantra/gradle-8.7/
+
+/third_party/
+/CTranslate2_CMakeLists.txt
+/iTantra_Final_Report.md

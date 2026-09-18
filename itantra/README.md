@@ -16,17 +16,18 @@ Implemented:
 - local Wi-Fi TCP source implementation
 - secure session architecture
 - emergency semantic codes
-- Hindi/English STT/TTS runtime integration
+- 10-language STT/TTS runtime integration
 - reproducible model provisioning.
 
 Not yet verified:
 - physical STT/TTS Android inference
+- physical MT Android inference
 - two-phone Bluetooth/Wi-Fi
 - real WER
 - physical latency/RAM.
 
-Blocked:
-- real cross-language MT.
+Source Implemented:
+- real cross-language MT (CTranslate2 Native JNI)
 
 Architecture:
 - SherpaOnnxSpeechSynthesizer for TTS

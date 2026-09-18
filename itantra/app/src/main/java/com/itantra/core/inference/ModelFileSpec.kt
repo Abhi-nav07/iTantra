@@ -8,15 +8,16 @@ data class ModelFileSpec(
     val requiredFiles: List<String>,
     val mainModelFile: String,
     val tokensFile: String,
-    val auxFile: String? = null
+    val auxFile: String? = null,
+    val isShared: Boolean = false,
+    val sharedPath: String? = null
 ) {
     enum class EngineType { STT, TTS }
 }
 
 object ModelFileSpecs {
-    fun getSttSpec(lang: LanguageCode): ModelFileSpec? {
-        if (lang != LanguageCode.HINDI && lang != LanguageCode.ENGLISH) return null
-
+    fun getSttSpec(lang: LanguageCode): ModelFileSpec {
+        // We use a shared multilingual Whisper model for all languages.
         return ModelFileSpec(
             type = ModelFileSpec.EngineType.STT,
             languageCode = lang,
@@ -27,17 +28,27 @@ object ModelFileSpecs {
             ),
             mainModelFile = "tiny-encoder.int8.onnx",
             auxFile = "tiny-decoder.int8.onnx",
-            tokensFile = "tiny-tokens.txt"
+            tokensFile = "tiny-tokens.txt",
+            isShared = true,
+            sharedPath = "shared/stt"
         )
     }
 
     fun getTtsSpec(lang: LanguageCode): ModelFileSpec? {
-        val prefix = when (lang) {
-            LanguageCode.HINDI -> "hi_IN-pratham-medium"
-            LanguageCode.ENGLISH -> "en_US-amy-medium"
+        when (lang) {
+            LanguageCode.HINDI,
+            LanguageCode.ENGLISH,
+            LanguageCode.BENGALI,
+            LanguageCode.GUJARATI,
+            LanguageCode.MARATHI,
+            LanguageCode.KANNADA,
+            LanguageCode.MALAYALAM,
+            LanguageCode.TAMIL,
+            LanguageCode.TELUGU,
+            LanguageCode.ODIA -> {}
             else -> return null
         }
-        val modelFile = "$prefix.onnx"
+        val modelFile = "model.onnx"
 
         return ModelFileSpec(
             type = ModelFileSpec.EngineType.TTS,

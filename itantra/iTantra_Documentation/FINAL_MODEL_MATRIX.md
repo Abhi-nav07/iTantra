@@ -2,13 +2,13 @@
 
 | Language | STT Model | TTS Model | MT Model | Files | Provisioning | Runtime Impl | Device Verification | License |
 |---|---|---|---|---|---|---|---|---|
-| Hindi (hi) | Whisper | Piper/VITS | N/A | `tiny-encoder.int8.onnx`, `tiny-decoder.int8.onnx`, `tiny-tokens.txt`, `hi_IN-pratham-medium.onnx`, `tokens.txt` | VERIFIED | `SherpaOnnxSpeechRecognizer`, `SherpaOnnxSpeechSynthesizer` | NOT_TESTED | MIT/Open |
-| English (en) | Whisper | Piper/VITS | N/A | `tiny-encoder.int8.onnx`, `tiny-decoder.int8.onnx`, `tiny-tokens.txt`, `en_US-amy-medium.onnx`, `tokens.txt` | VERIFIED | `SherpaOnnxSpeechRecognizer`, `SherpaOnnxSpeechSynthesizer` | NOT_TESTED | MIT/Open |
-| Bengali (bn) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |
-| Gujarati (gu) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |
-| Marathi (mr) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |
-| Kannada (kn) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |
-| Malayalam (ml) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |
-| Tamil (ta) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |
-| Telugu (te) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |
-| Odia (or) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |
+| Hindi (hi) | Whisper | MMS/VITS | CTranslate2 | STT: `tiny-encoder.int8.onnx`, `tiny-decoder.int8.onnx`, `tiny-tokens.txt`<br>TTS: `model.onnx`, `tokens.txt`<br>MT: `model.bin`, `source_vocabulary.json`, `target_vocabulary.json`, `model.SRC`, `model.TGT` | VERIFIED | `SherpaOnnxSpeechRecognizer`, `SherpaOnnxSpeechSynthesizer`, `CTranslate2TranslationEngine` | NOT_TESTED | MIT/Open |
+| English (en) | Whisper | MMS/VITS | CTranslate2 | STT: `tiny-encoder...`<br>TTS: `model.onnx`, `tokens.txt`<br>MT: `model.bin`, etc. | VERIFIED | `SherpaOnnx...`, `CTranslate2...` | NOT_TESTED | MIT/Open |
+| Bengali (bn) | Whisper | MMS/VITS | CTranslate2 | STT: `tiny-encoder...`<br>TTS: `model.onnx`, `tokens.txt`<br>MT: `model.bin`, etc. | VERIFIED | `SherpaOnnx...`, `CTranslate2...` | NOT_TESTED | MIT/Open |
+| Gujarati (gu) | Whisper | MMS/VITS | CTranslate2 | STT: `tiny-encoder...`<br>TTS: `model.onnx`, `tokens.txt`<br>MT: `model.bin`, etc. | VERIFIED | `SherpaOnnx...`, `CTranslate2...` | NOT_TESTED | MIT/Open |
+| Marathi (mr) | Whisper | MMS/VITS | CTranslate2 | STT: `tiny-encoder...`<br>TTS: `model.onnx`, `tokens.txt`<br>MT: `model.bin`, etc. | VERIFIED | `SherpaOnnx...`, `CTranslate2...` | NOT_TESTED | MIT/Open |
+| Kannada (kn) | Whisper | MMS/VITS | CTranslate2 | STT: `tiny-encoder...`<br>TTS: `model.onnx`, `tokens.txt`<br>MT: `model.bin`, etc. | VERIFIED | `SherpaOnnx...`, `CTranslate2...` | NOT_TESTED | MIT/Open |
+| Malayalam (ml) | Whisper | MMS/VITS | CTranslate2 | STT: `tiny-encoder...`<br>TTS: `model.onnx`, `tokens.txt`<br>MT: `model.bin`, etc. | VERIFIED | `SherpaOnnx...`, `CTranslate2...` | NOT_TESTED | MIT/Open |
+| Tamil (ta) | Whisper | MMS/VITS | CTranslate2 | STT: `tiny-encoder...`<br>TTS: `model.onnx`, `tokens.txt`<br>MT: `model.bin`, etc. | VERIFIED | `SherpaOnnx...`, `CTranslate2...` | NOT_TESTED | MIT/Open |
+| Telugu (te) | Whisper | MMS/VITS | CTranslate2 | STT: `tiny-encoder...`<br>TTS: `model.onnx`, `tokens.txt`<br>MT: `model.bin`, etc. | VERIFIED | `SherpaOnnx...`, `CTranslate2...` | NOT_TESTED | MIT/Open |
+| Odia (or) | Whisper | MMS/VITS | CTranslate2 | STT: `tiny-encoder...`<br>TTS: `model.onnx`, `tokens.txt`<br>MT: `model.bin`, etc. | VERIFIED | `SherpaOnnx...`, `CTranslate2...` | NOT_TESTED | MIT/Open |

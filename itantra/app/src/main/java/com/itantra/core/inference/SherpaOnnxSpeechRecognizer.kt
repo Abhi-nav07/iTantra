@@ -29,10 +29,15 @@ class SherpaOnnxSpeechRecognizer(
         if (isLoaded) return@withContext
 
         val spec = ModelFileSpecs.getSttSpec(languageCode) ?: throw UnsupportedOperationException("No STT spec for language ${languageCode}")
+        val packsDir = storage.packDirectory(languageCode).parentFile // language_packs dir
         val packDir = storage.packDirectory(languageCode)
 
-        // Android paths should be separated into stt and tts subdirectories as per prompt
-        val sttDir = File(packDir, "stt")
+        // Handle shared STT models
+        val sttDir = if (spec.isShared && spec.sharedPath != null) {
+            File(packsDir, spec.sharedPath)
+        } else {
+            File(packDir, "stt")
+        }
 
         for (requiredFile in spec.requiredFiles) {
             val f = File(sttDir, requiredFile)
@@ -62,7 +67,10 @@ class SherpaOnnxSpeechRecognizer(
             modelConfig = OfflineModelConfig(
                 whisper = OfflineWhisperModelConfig(
                     encoder = File(sttDir, spec.mainModelFile).absolutePath,
-                    decoder = File(sttDir, spec.auxFile!!).absolutePath
+                    decoder = File(sttDir, spec.auxFile!!).absolutePath,
+                    language = languageCode.wireCode,
+                    task = "transcribe",
+                    tailPaddings = -1
                 ),
                 tokens = File(sttDir, spec.tokensFile).absolutePath,
                 numThreads = 2,
