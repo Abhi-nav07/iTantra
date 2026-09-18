@@ -1,14 +1,11 @@
 # iTantra
 
-Offline, multilingual neural voice transceiver — SIH 2026, Problem
-Statement 173. See `docs/ARCHITECTURE.md` for the full design, `docs/
-MODEL_STRATEGY.md` for model research findings, and `docs/adr/` for
-recorded engineering decisions.
+Offline, multilingual neural voice transceiver — SIH 2026, Problem Statement 173. 
+See `iTantra_Documentation/MD_Files/ARCHITECTURE.md` for the full design, `iTantra_Documentation/MD_Files/MODEL_STRATEGY.md` for model research findings, and `iTantra_Documentation/MD_Files/adr/` for recorded engineering decisions.
 
-**Status: Task 01 (repository audit + foundation) only.** No STT, TTS,
-VAD, or Bluetooth/Wi-Fi transport is implemented. The app currently
-demonstrates architecture, navigation, and UI shell only — see the Task
-01 completion report for exactly what was verified vs. not.
+**Status: FINAL PROTOTYPE PARTIAL (Module 10 complete)** 
+- **STT (Sherpa-ONNX Whisper)**, **TTS (VITS Piper)**, **VAD (Silero)**, **Continuous Mode**, and **Secure Transport** (ECDH/AES-GCM via Bluetooth/Wi-Fi Direct) are **implemented** and integrated.
+- **Machine Translation (IndicTrans2)** is currently **BLOCKED** natively on Android without a custom C++ KV-cache inference wrapper.
 
 ## Building
 
@@ -19,14 +16,6 @@ Requires Android Studio (or a standalone Android SDK) and JDK 17+.
 ./gradlew testDebugUnitTest
 ```
 
-Note: this repository's Gradle wrapper JAR (`gradle/wrapper/gradle-
-wrapper.jar`) is intentionally **not** committed by the environment that
-authored Task 01, because that environment had no network access to fetch
-it. Run `gradle wrapper` once with a locally installed Gradle (matching
-the version in `gradle/wrapper/gradle-wrapper.properties`) to regenerate
-it before using `./gradlew`, or open the project directly in Android
-Studio, which will bootstrap the wrapper automatically.
-
 ## Project layout
 
 ```
@@ -34,12 +23,12 @@ app/src/main/java/com/itantra/
   app/            entry point, navigation, theme, manual DI (AppGraph)
   domain/model/   pure data types (Language, LanguagePackManifest, Measurement, ...)
   domain/repository/  LanguagePackRepository contract
-  core/inference/ SpeechRecognizerEngine / SpeechSynthesizerEngine / VoiceActivityDetector
-                  interfaces + ActiveLanguageSessionManager
-  core/transport/ TransportEngine contract (Bluetooth/Wi-Fi Direct — not implemented)
-  core/storage/   LanguagePackStorage contract (not implemented)
-  core/metrics/   MetricsRecorder — real measurements only, never fabricated
-  data/languagepack/  MockLanguagePackRepository (Task 01: in-memory only)
+  core/inference/ SherpaOnnxSpeechRecognizer / KokoroTtsEngine / ContinuousListenEngine / VoiceActivityDetector
+  core/transport/ BluetoothPeerTransport / WifiPeerTransport / TransportCoordinator
+  core/crypto/    SecureSessionManager (ECDH/AES-GCM)
+  core/storage/   LanguagePackStorage 
+  core/metrics/   MetricsRecorder — real measurements only
+  data/languagepack/  RealLanguagePackRepository 
   feature/transceiver/  main screen
   feature/languages/    language packs screen
   feature/diagnostics/  diagnostics screen
