@@ -53,3 +53,5 @@ secrets.properties
 # --- Misc ---
 *.log
 .kotlin/
+
+/provisioned_models/

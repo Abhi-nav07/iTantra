@@ -2,8 +2,8 @@
 
 | Language | STT Model | TTS Model | MT Model | Files | Provisioning | Runtime Impl | Device Verification | License |
 |---|---|---|---|---|---|---|---|---|
-| Hindi (hi) | Whisper | Piper/VITS | N/A | `tiny-encoder.int8.onnx`, `tiny-decoder.int8.onnx`, `tiny-tokens.txt`, `hi-tts.onnx` | VERIFIED | `SherpaOnnxSpeechRecognizer`, `SherpaOnnxSpeechSynthesizer` | NOT_TESTED | MIT/Open |
-| English (en) | Whisper | Piper/VITS | N/A | (same structure) | VERIFIED | `SherpaOnnxSpeechRecognizer`, `SherpaOnnxSpeechSynthesizer` | NOT_TESTED | MIT/Open |
+| Hindi (hi) | Whisper | Piper/VITS | N/A | `tiny-encoder.int8.onnx`, `tiny-decoder.int8.onnx`, `tiny-tokens.txt`, `hi_IN-pratham-medium.onnx`, `tokens.txt` | VERIFIED | `SherpaOnnxSpeechRecognizer`, `SherpaOnnxSpeechSynthesizer` | NOT_TESTED | MIT/Open |
+| English (en) | Whisper | Piper/VITS | N/A | `tiny-encoder.int8.onnx`, `tiny-decoder.int8.onnx`, `tiny-tokens.txt`, `en_US-amy-medium.onnx`, `tokens.txt` | VERIFIED | `SherpaOnnxSpeechRecognizer`, `SherpaOnnxSpeechSynthesizer` | NOT_TESTED | MIT/Open |
 | Bengali (bn) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |
 | Gujarati (gu) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |
 | Marathi (mr) | Unsupported | Unsupported | Unsupported | None | BLOCKED | BLOCKED | NOT_TESTED | N/A |

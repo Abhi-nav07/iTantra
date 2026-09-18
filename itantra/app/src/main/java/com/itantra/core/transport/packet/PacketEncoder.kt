@@ -8,7 +8,11 @@ import java.util.zip.CRC32
  * Encodes an [ItantraPacket] into a framed ByteArray ready for a stream.
  *
  * Wire Format V2 (Big Endian):
- * 0..3   Frame Length (Int) -> Header(23) + Payload(N) + CRC(4) = 27 + N
+ * outer prefix = 4 bytes
+ * actual V2 body = 32-byte header + N-byte payload + 4-byte CRC
+ * total encoded size = 40 + N bytes.
+ *
+ * 0..3   Frame Length (Int) -> 36 + N
  * 4..7   MAGIC ('I','T','P','1') -> 0x49545031
  * 8      Version (Byte) -> 2
  * 9      Type (Byte)
