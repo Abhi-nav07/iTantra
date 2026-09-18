@@ -1,0 +1,42 @@
+[
+  {
+    "language": "hi",
+    "type": "STT",
+    "repo_id": "csukuangfj/sherpa-onnx-whisper-tiny",
+    "filenames": ["tiny-encoder.int8.onnx", "tiny-decoder.int8.onnx", "tiny-tokens.txt"],
+    "runtime": "sherpa-onnx",
+    "license": "Apache 2.0",
+    "source_url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-tiny",
+    "verified": true
+  },
+  {
+    "language": "en",
+    "type": "STT",
+    "repo_id": "csukuangfj/sherpa-onnx-whisper-tiny",
+    "filenames": ["tiny-encoder.int8.onnx", "tiny-decoder.int8.onnx", "tiny-tokens.txt"],
+    "runtime": "sherpa-onnx",
+    "license": "Apache 2.0",
+    "source_url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-tiny",
+    "verified": true
+  },
+  {
+    "language": "hi",
+    "type": "TTS",
+    "repo_id": "csukuangfj/vits-piper-hi_IN-pratham-medium",
+    "filenames": ["hi_IN-pratham-medium.onnx", "tokens.txt"],
+    "runtime": "sherpa-onnx",
+    "license": "MIT",
+    "source_url": "https://huggingface.co/csukuangfj/vits-piper-hi_IN-pratham-medium",
+    "verified": true
+  },
+  {
+    "language": "en",
+    "type": "TTS",
+    "repo_id": "csukuangfj/vits-piper-en_US-amy-medium",
+    "filenames": ["en_US-amy-medium.onnx", "tokens.txt"],
+    "runtime": "sherpa-onnx",
+    "license": "MIT",
+    "source_url": "https://huggingface.co/csukuangfj/vits-piper-en_US-amy-medium",
+    "verified": true
+  }
+]

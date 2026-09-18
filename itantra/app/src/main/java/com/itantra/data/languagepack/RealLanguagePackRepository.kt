@@ -46,16 +46,18 @@ class RealLanguagePackRepository(
 
     private fun buildInitialSttStates(): Map<LanguageCode, LanguagePackInstallState> {
         return LanguageCatalog.all.associate { lang ->
-            val dir = storage.packDirectory(lang.code)
-            val sttExists = File(dir, "model.int8.onnx").exists() && File(dir, "tokens.txt").exists()
+            val dir = File(storage.packDirectory(lang.code), "stt")
+            val spec = com.itantra.core.inference.ModelFileSpecs.getSttSpec(lang.code)
+            val sttExists = spec.requiredFiles.all { File(dir, it).exists() && File(dir, it).length() > 0 }
             lang.code to if (sttExists) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
         }
     }
     
     private fun buildInitialTtsStates(): Map<LanguageCode, LanguagePackInstallState> {
         return LanguageCatalog.all.associate { lang ->
-            val dir = storage.packDirectory(lang.code)
-            val ttsExists = File(dir, "tts_model.onnx").exists() && File(dir, "lexicon.txt").exists() && File(dir, "tts_tokens.txt").exists()
+            val dir = File(storage.packDirectory(lang.code), "tts")
+            val spec = com.itantra.core.inference.ModelFileSpecs.getTtsSpec(lang.code)
+            val ttsExists = spec.requiredFiles.all { File(dir, it).exists() && File(dir, it).length() > 0 }
             lang.code to if (ttsExists) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
         }
     }
@@ -73,8 +75,9 @@ class RealLanguagePackRepository(
                 
                 var sttSize = 0L
                 if (sttState == LanguagePackInstallState.INSTALLED) {
-                    val dir = storage.packDirectory(lang.code)
-                    listOf("model.int8.onnx", "tokens.txt").forEach { f ->
+                    val dir = File(storage.packDirectory(lang.code), "stt")
+                    val spec = com.itantra.core.inference.ModelFileSpecs.getSttSpec(lang.code)
+                    spec.requiredFiles.forEach { f ->
                         val file = File(dir, f)
                         if (file.exists()) sttSize += file.length()
                     }
@@ -82,8 +85,9 @@ class RealLanguagePackRepository(
                 
                 var ttsSize = 0L
                 if (ttsState == LanguagePackInstallState.INSTALLED) {
-                    val dir = storage.packDirectory(lang.code)
-                    listOf("tts_model.onnx", "lexicon.txt", "tts_tokens.txt").forEach { f ->
+                    val dir = File(storage.packDirectory(lang.code), "tts")
+                    val spec = com.itantra.core.inference.ModelFileSpecs.getTtsSpec(lang.code)
+                    spec.requiredFiles.forEach { f ->
                         val file = File(dir, f)
                         if (file.exists()) ttsSize += file.length()
                     }

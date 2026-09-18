@@ -28,12 +28,17 @@ class SherpaOnnxSpeechRecognizer(
     override suspend fun load() = withContext(Dispatchers.IO) {
         if (isLoaded) return@withContext
 
+        val spec = ModelFileSpecs.getSttSpec(languageCode)
         val packDir = storage.packDirectory(languageCode)
-        val modelFile = File(packDir, "model.int8.onnx")
-        val tokensFile = File(packDir, "tokens.txt")
-
-        if (!modelFile.exists() || !tokensFile.exists()) {
-            throw IllegalStateException("Model files not found for language ${languageCode.wireCode}")
+        
+        // Android paths should be separated into stt and tts subdirectories as per prompt
+        val sttDir = File(packDir, "stt")
+        
+        for (requiredFile in spec.requiredFiles) {
+            val f = File(sttDir, requiredFile)
+            if (!f.exists() || f.length() == 0L) {
+                throw IllegalStateException("Missing or zero-byte STT model file: $requiredFile for language ${languageCode.wireCode}")
+            }
         }
 
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -55,10 +60,11 @@ class SherpaOnnxSpeechRecognizer(
                 featureDim = 80
             ),
             modelConfig = OfflineModelConfig(
-                nemo = OfflineNemoEncDecCtcModelConfig(
-                    model = modelFile.absolutePath
+                whisper = OfflineWhisperModelConfig(
+                    encoder = File(sttDir, spec.mainModelFile).absolutePath,
+                    decoder = File(sttDir, spec.auxFile!!).absolutePath
                 ),
-                tokens = tokensFile.absolutePath,
+                tokens = File(sttDir, spec.tokensFile).absolutePath,
                 numThreads = 2,
                 debug = false
             )

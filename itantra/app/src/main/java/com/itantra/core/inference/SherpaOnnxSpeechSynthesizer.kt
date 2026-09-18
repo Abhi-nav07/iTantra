@@ -28,13 +28,15 @@ class SherpaOnnxSpeechSynthesizer(
     override suspend fun load() = withContext(Dispatchers.IO) {
         if (isLoaded) return@withContext
 
+        val spec = ModelFileSpecs.getTtsSpec(languageCode)
         val packDir = storage.packDirectory(languageCode)
-        val modelFile = File(packDir, "tts_model.onnx")
-        val lexiconFile = File(packDir, "lexicon.txt")
-        val tokensFile = File(packDir, "tts_tokens.txt")
+        val ttsDir = File(packDir, "tts")
 
-        if (!modelFile.exists() || !lexiconFile.exists() || !tokensFile.exists()) {
-            throw IllegalStateException("TTS Model files not found for language ${languageCode.wireCode}")
+        for (requiredFile in spec.requiredFiles) {
+            val f = File(ttsDir, requiredFile)
+            if (!f.exists() || f.length() == 0L) {
+                throw IllegalStateException("Missing or zero-byte TTS model file: $requiredFile for language ${languageCode.wireCode}")
+            }
         }
 
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -53,9 +55,9 @@ class SherpaOnnxSpeechSynthesizer(
         val config = OfflineTtsConfig(
             model = OfflineTtsModelConfig(
                 vits = OfflineTtsVitsModelConfig(
-                    model = modelFile.absolutePath,
-                    lexicon = lexiconFile.absolutePath,
-                    tokens = tokensFile.absolutePath,
+                    model = File(ttsDir, spec.mainModelFile).absolutePath,
+                    tokens = File(ttsDir, spec.tokensFile).absolutePath,
+                    dataDir = "" // Piper typically uses dataDir in Sherpa, but passing empty uses built-in or assumes single-speaker no-lexicon.
                 ),
                 numThreads = 1,
                 debug = false
