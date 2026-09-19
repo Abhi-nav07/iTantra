@@ -88,7 +88,11 @@ class TransceiverCoordinator(
         // Reload unresolved emergency state from durable persistence on initialization/restart
         val unresolved = emergencyStore.getUnresolvedRecords()
         if (unresolved.isNotEmpty()) {
-            _activeEmergencyAlert.value = unresolved.lastOrNull()
+            val lastUnresolved = unresolved.lastOrNull()
+            _activeEmergencyAlert.value = lastUnresolved
+            lastUnresolved?.let {
+                com.itantra.core.service.OperationalForegroundService.triggerEmergency(context, it.resolvedPhrase)
+            }
         }
 
         scope.launch {
@@ -186,8 +190,8 @@ class TransceiverCoordinator(
                         val req = SpeechSynthesisRequest(msg.language ?: LanguageCode.ENGLISH, text, "alert")
                         val res = sessionManager.currentTtsEngine?.synthesize(req)
                         if (res != null) {
-                            val sink = SpeakerAudioSink()
-                            sink.init(res.sampleRateHz, android.media.AudioAttributes.USAGE_ALARM)
+                            val sink = SpeakerAudioSink(context)
+                            sink.init(res.sampleRateHz, android.media.AudioAttributes.USAGE_ALARM, requestMaxVolume = true)
                             sink.play(res.pcmAudio)
                             sink.flushAndStop()
                             sink.release()
@@ -1048,6 +1052,13 @@ class TransceiverCoordinator(
                 e.printStackTrace()
             }
         }
+    }
+
+    fun resolveActiveEmergency() {
+        val alert = _activeEmergencyAlert.value ?: return
+        _activeEmergencyAlert.value = null
+        emergencyStore.recordHumanAck(alert.messageId)
+        com.itantra.core.service.OperationalForegroundService.resolveEmergency(context)
     }
 
     private suspend fun retryUnresolvedEmergencies() {

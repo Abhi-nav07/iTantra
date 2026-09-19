@@ -29,7 +29,7 @@ This matrix documents the operational hardening, emergency safety pathways, audi
 | **Volume Handling** | PASS | PASS | NOT_TESTED | `SOURCE_READY` | Maximum-volume intent requested for alarms; previous system alarm volume saved and restored. OEM/DND policies apply. |
 | **Acoustic Echo Cancellation** | PASS | PASS | NOT_TESTED | `UNIT_TESTED` | Probes `AcousticEchoCanceler.isAvailable()`; graceful fallback to half-duplex suppression when unsupported. |
 | **TTS Playback Completion** | PASS | PASS | NOT_TESTED | `UNIT_TESTED` | `SpeakerAudioSink.flushAndStop` tracks `AudioTrack.playbackHeadPosition` to prevent end-of-sentence clipping. |
-| **Offline Runtime Guarantee** | PASS | PASS | NOT_TESTED | `SOURCE_READY` | STT, MT, TTS, RFCOMM Bluetooth, and Local Wi-Fi TCP execute 100% air-gapped without internet access after provisioning. |
+| **Offline Runtime Guarantee** | PASS | PASS | NOT_TESTED | `SOURCE_READY` | Runtime inference and peer communication are fully offline after required models have been provisioned. Models may be downloaded or sideloaded beforehand. STT, MT, TTS, RFCOMM Bluetooth, and Local Wi-Fi TCP execute air-gapped without internet access. |
 
 ---
 

@@ -182,7 +182,7 @@ class TtsEvaluationViewModel(
                 // Play PCM audio
                 withContext(Dispatchers.IO) {
                     if (audioSink == null) {
-                        audioSink = SpeakerAudioSink()
+                        audioSink = SpeakerAudioSink(context)
                     }
                     audioSink?.init(sampleRate)
                     audioSink?.play(samples)
@@ -207,7 +207,7 @@ class TtsEvaluationViewModel(
             _state.update { it.copy(isPlaying = true, statusMessage = "Playing audio again...") }
             try {
                 if (audioSink == null) {
-                    audioSink = SpeakerAudioSink()
+                    audioSink = SpeakerAudioSink(context)
                 }
                 audioSink?.init(rate)
                 audioSink?.play(samples)

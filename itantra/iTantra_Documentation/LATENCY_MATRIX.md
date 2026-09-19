@@ -45,13 +45,13 @@ $$\text{Speech A} \xrightarrow{\text{STT}} \text{Text} \xrightarrow{\text{MT}} \
 
 ## 2. Component Latency Ranges & Targets
 
-| Pipeline Stage | Engineering Target | Typical Measured Value | Measurement Hook | Notes |
+| Pipeline Stage | Engineering Target | Typical Simulated / Estimate (Physical: NOT_TESTED) | Measurement Hook | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **STT Finalization ($T_1 - T_0$)** | $< 350\text{ ms}$ | $\approx 180\text{ ms} - 250\text{ ms}$ | `MetricsRecorder.recordSttEndpointToFinalText` | Sherpa-ONNX Whisper Tiny Multilingual INT8. |
-| **Direct MT ($T_2 - T_1$)** | $< 500\text{ ms}$ | $\approx 320\text{ ms} - 380\text{ ms}$ | `TransceiverCoordinator.mtLatencyMillis` | IndicTrans2 200M INT8 via CTranslate2. |
-| **2-Hop Pivot MT ($T_2 - T_1$)** | $< 900\text{ ms}$ | $\approx 680\text{ ms} - 750\text{ ms}$ | `TransceiverCoordinator.mtLatencyMillis` | 2 sequential CTranslate2 invocations with English pivot. |
-| **Crypto & Encoding ($T_3 - T_2$)** | $< 10\text{ ms}$ | $\approx 1\text{ ms} - 3\text{ ms}$ | `SecureSessionManager.encryptDurationUs` | AES-256-GCM authenticated encryption + length framing. |
+| **STT Finalization ($T_1 - T_0$)** | $< 350\text{ ms}$ | $\approx 180\text{ ms} - 250\text{ ms}$ (`SOURCE_ESTIMATE`) | `MetricsRecorder.recordSttEndpointToFinalText` | Sherpa-ONNX Whisper Tiny Multilingual INT8. |
+| **Direct MT ($T_2 - T_1$)** | $< 500\text{ ms}$ | $\approx 320\text{ ms} - 380\text{ ms}$ (`SOURCE_ESTIMATE`) | `TransceiverCoordinator.mtLatencyMillis` | IndicTrans2 200M INT8 via CTranslate2. |
+| **2-Hop Pivot MT ($T_2 - T_1$)** | $< 900\text{ ms}$ | $\approx 680\text{ ms} - 750\text{ ms}$ (`SOURCE_ESTIMATE`) | `TransceiverCoordinator.mtLatencyMillis` | 2 sequential CTranslate2 invocations with English pivot. |
+| **Crypto & Encoding ($T_3 - T_2$)** | $< 10\text{ ms}$ | $\approx 1\text{ ms} - 3\text{ ms}$ (`SOURCE_ESTIMATE`) | `SecureSessionManager.encryptDurationUs` | AES-256-GCM authenticated encryption + length framing. |
 | **Transport One-Way ($\frac{\text{RTT}}{2}$)** | $< 100\text{ ms}$ | NOT_TESTED (Target: $20 - 80\text{ ms}$) | `TransmissionMetrics.transmissionLatencyMillis` | Measured via round-trip ACK over Bluetooth RFCOMM / Wi-Fi. |
-| **TTS Batch Generation ($T_8 - T_7$)** | $< 350\text{ ms}$ | $\approx 180\text{ ms} - 280\text{ ms}$ | `MetricsRecorder.recordTtsTimeToFirstAudio` | Meta MMS VITS ONNX model. Batch synthesis proxy. |
-| **TTS Real-Time Factor (RTF)** | $< 0.50$ | $\approx 0.30 - 0.42$ | `MetricsRecorder.recordTtsRealTimeFactor` | Compute time is $< 50\%$ of spoken audio duration. |
-| **Estimated E2E Latency** | $< 1500\text{ ms}$ | $\approx 600\text{ ms} - 1200\text{ ms}$ | `TransceiverMessage.estimatedE2eMillis` | Speech endpoint to remote playback start. |
+| **TTS Batch Generation ($T_8 - T_7$)** | $< 350\text{ ms}$ | $\approx 180\text{ ms} - 280\text{ ms}$ (`SOURCE_ESTIMATE`) | `MetricsRecorder.recordTtsTimeToFirstAudio` | Meta MMS VITS ONNX model. Batch synthesis proxy. |
+| **TTS Real-Time Factor (RTF)** | $< 0.50$ | $\approx 0.30 - 0.42$ (`SOURCE_ESTIMATE`) | `MetricsRecorder.recordTtsRealTimeFactor` | Compute time is $< 50\%$ of spoken audio duration. |
+| **Estimated E2E Latency** | $< 1500\text{ ms}$ | $\approx 600\text{ ms} - 1200\text{ ms}$ (`SOURCE_ESTIMATE`) | `TransceiverMessage.estimatedE2eMillis` | Speech endpoint to remote playback start. |

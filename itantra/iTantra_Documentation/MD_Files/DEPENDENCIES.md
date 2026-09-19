@@ -23,4 +23,4 @@
 - **JUnit 4**: Unit testing.
 - **Espresso & Compose UI Test**: UI layer verification.
 
-> Note: All Cloud SDKs, telemetry, Firebase, and authentication SDKs are strictly prohibited to ensure a pure 100% offline transceiver application.
+> Note: All Cloud SDKs, telemetry, Firebase, and authentication SDKs are strictly prohibited. Runtime inference and peer communication are fully offline after required models have been provisioned.
