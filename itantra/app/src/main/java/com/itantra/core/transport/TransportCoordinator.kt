@@ -106,11 +106,20 @@ class TransportCoordinator(
                 e.printStackTrace()
             }
 
+            val ciphertextBytes = packet.payload.size
+            val semanticBytes = if (packet.securityVersion == 1.toByte() && packet.payload.size >= 16) {
+                packet.payload.size - 16
+            } else {
+                packet.payload.size
+            }
+            val wireBytes = encoded.size
+
             TransmissionMetrics(
                 payloadBytes = Measurement.Measured(packet.payload.size),
-                secureBytes = Measurement.Measured(packet.payload.size), // Actual ciphertext bytes
-                finalFrameBytes = Measurement.Measured(encoded.size),   // Authoritative wire frame size
-                packetBytes = Measurement.Measured(encoded.size),
+                semanticPayloadBytes = Measurement.Measured(semanticBytes),
+                secureBytes = Measurement.Measured(ciphertextBytes),
+                finalFrameBytes = Measurement.Measured(wireBytes),
+                packetBytes = Measurement.Measured(wireBytes),
                 transmissionLatencyMillis = txLatency?.let { Measurement.Measured(it / 1_000_000) } ?: Measurement.NotMeasured
             )
         }

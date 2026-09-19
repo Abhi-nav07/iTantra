@@ -1,7 +1,7 @@
 # FINAL PROJECT AUDIT
 
 ## Architecture Summary
-iTantra uses a centralized `TransceiverCoordinator` managing `ActiveLanguageSessionManager`, `SecureSessionManager`, `TransportEngine`, `ContinuousListenEngine`, and `CTranslate2TranslationEngine`. The architecture natively supports 100% offline AI processing via Sherpa-ONNX (STT/TTS) and CTranslate2 native JNI (MT), with secure peer-to-peer binary protocol over Bluetooth RFCOMM and Wi-Fi TCP.
+iTantra uses a centralized `TransceiverCoordinator` managing `ActiveLanguageSessionManager`, `SecureSessionManager`, `TransportEngine`, `ContinuousListenEngine`, and `CTranslate2TranslationEngine`. Runtime inference and peer communication are fully offline after required models have been provisioned. Models may be downloaded or sideloaded beforehand. Processing occurs via Sherpa-ONNX (STT/TTS) and CTranslate2 native JNI (MT), with secure peer-to-peer binary protocol over Bluetooth RFCOMM and Wi-Fi TCP.
 
 ## P0/P1 Findings and Fixes (Pass A–E)
 1. **10-Language Model Provisioning (Pass A)**: All 10 ISRO languages provisioned with real models — shared Whisper Tiny STT, per-language MMS/VITS TTS, IndicTrans2 CT2 MT (indic-en and en-indic).
@@ -50,7 +50,7 @@ iTantra uses a centralized `TransceiverCoordinator` managing `ActiveLanguageSess
 - `OperationalForegroundService` for SOS persistence across app restarts.
 
 ## Low-Bitrate Evidence
-- Semantic text transmission (STT output → text packet → TTS playback) reduces payload to under 200 bytes per message.
+- Semantic text transmission: typical semantic messages are designed to remain small; actual wire size is measured from encodedFrame.size.
 - 16KB max payload strictly enforced via `PacketEncoder`.
 
 ## Compatibility
@@ -59,13 +59,13 @@ iTantra uses a centralized `TransceiverCoordinator` managing `ActiveLanguageSess
 - Sherpa-ONNX and CTranslate2 JNI native libraries for ARM64-v8a.
 
 ## Performance
-- **Storage**: ~2.87 GB total model store (STT ~99 MB, TTS ~1.21 GB, MT ~1.63 GB).
-- **APK**: ~136 MB (with native JNI libs).
+- **ACTIVE_RUNTIME_MODEL_STORE**: 3,082,861,487 bytes (~2.87 GiB / 2,940.05 MB; STT ~99 MB, TTS ~1.21 GB, MT ~1.63 GB).
+- **APK_SIZE**: 142,801,738 bytes (~136.19 MB) (with native JNI libs).
 - **Device Profiling**: Heuristic RAM-based profiles (FULL_AI ≥4GB, STANDARD_AI 2-4GB, CORE_ONLY <2GB).
 - **Physical Metrics**: NOT_TESTED on actual hardware.
 
 ## Validation
-- **L1 BUILD/UNIT**: VERIFIED (all unit tests pass, clean assembleDebug).
+- **L1 BUILD/UNIT**: BUILD_VERIFIED / UNIT_VERIFIED (all unit tests pass, clean assembleDebug).
 - **L2 DEVICE**: NOT_TESTED (no physical device available during automated validation).
 - **L3 TWO-PEER**: NOT_TESTED.
 

@@ -87,4 +87,46 @@ class TransportCoordinatorTest {
         assertEquals(PacketType.TEXT, emitted.type)
         assertEquals(54321L, emitted.messageId)
     }
+
+    @Test
+    fun `test TransportCoordinator byte accounting verifies semantic, ciphertext, and wire frame sizes`() = runBlocking {
+        val mockTransport = MockPeerTransport()
+        val coordinator = TransportCoordinator(mockTransport)
+
+        // Plaintext payload of 10 bytes
+        val plaintext = "1234567890".toByteArray()
+        val plainPacket = ItantraPacket(
+            type = PacketType.CAPABILITIES,
+            messageId = 1001L,
+            payload = plaintext
+        )
+
+        val plainMetrics = coordinator.send(plainPacket)
+        val expectedWireBytes = PacketEncoder.encode(plainPacket).size
+
+        assertEquals(com.itantra.domain.model.Measurement.Measured(10), plainMetrics.payloadBytes)
+        assertEquals(com.itantra.domain.model.Measurement.Measured(10), plainMetrics.semanticPayloadBytes)
+        assertEquals(com.itantra.domain.model.Measurement.Measured(10), plainMetrics.secureBytes)
+        assertEquals(com.itantra.domain.model.Measurement.Measured(expectedWireBytes), plainMetrics.finalFrameBytes)
+        assertEquals(com.itantra.domain.model.Measurement.Measured(expectedWireBytes), plainMetrics.packetBytes)
+
+        // Encrypted packet (securityVersion = 1) with 10 bytes semantic + 16 bytes GCM tag = 26 bytes payload
+        val cipherPayload = ByteArray(26) { 0x42 }
+        val encryptedPacket = ItantraPacket(
+            type = PacketType.CAPABILITIES,
+            messageId = 1002L,
+            securityVersion = 1,
+            counter = 1,
+            payload = cipherPayload
+        )
+
+        val secureMetrics = coordinator.send(encryptedPacket)
+        val expectedEncWireBytes = PacketEncoder.encode(encryptedPacket).size
+
+        assertEquals(com.itantra.domain.model.Measurement.Measured(26), secureMetrics.payloadBytes)
+        assertEquals(com.itantra.domain.model.Measurement.Measured(10), secureMetrics.semanticPayloadBytes)
+        assertEquals(com.itantra.domain.model.Measurement.Measured(26), secureMetrics.secureBytes)
+        assertEquals(com.itantra.domain.model.Measurement.Measured(expectedEncWireBytes), secureMetrics.finalFrameBytes)
+        assertEquals(com.itantra.domain.model.Measurement.Measured(expectedEncWireBytes), secureMetrics.packetBytes)
+    }
 }

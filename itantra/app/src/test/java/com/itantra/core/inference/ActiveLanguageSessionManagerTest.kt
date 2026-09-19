@@ -136,4 +136,93 @@ class ActiveLanguageSessionManagerTest {
         assertTrue(threw)
         assertFalse(manager.activeLanguage.value == LanguageCode.HINDI)
     }
+
+    @Test
+    fun `STT load failure propagates exception, cleans up and sets ERROR state`() = runTest {
+        val log = EventLog()
+        val factory = object : EngineFactory {
+            override fun createRecognizer(language: LanguageCode): SpeechRecognizerEngine {
+                return object : SpeechRecognizerEngine {
+                    override val languageCode: LanguageCode = language
+                    override val isLoaded: Boolean = false
+                    override suspend fun load() { throw IllegalStateException("STT model file missing") }
+                    override suspend fun feed(samples: FloatArray) {}
+                    override suspend fun reset() {}
+                    override suspend fun finalizeUtterance(): SpeechRecognitionResult = throw NotImplementedError()
+                    override suspend fun unload() { log.events += "unload-stt" }
+                }
+            }
+            override fun createSynthesizer(language: LanguageCode): SpeechSynthesizerEngine? = null
+        }
+        val manager = ActiveLanguageSessionManager(factory)
+        var threw = false
+        try {
+            manager.switchTo(LanguageCode.HINDI)
+        } catch (e: IllegalStateException) {
+            threw = true
+        }
+        assertTrue("Expected exception to propagate", threw)
+        assertEquals(LanguageSessionState.ERROR, manager.sessionState.value)
+        assertEquals(null, manager.activeLanguage.value)
+        assertEquals(null, manager.currentSttEngine)
+        assertEquals(null, manager.currentTtsEngine)
+    }
+
+    @Test
+    fun `TTS load failure cleanly unloads loaded STT, leaves no leaked engine, and propagates exception`() = runTest {
+        val log = EventLog()
+        val factory = object : EngineFactory {
+            override fun createRecognizer(language: LanguageCode) = FakeRecognizer(language, log)
+            override fun createSynthesizer(language: LanguageCode) = object : SpeechSynthesizerEngine {
+                override val languageCode: LanguageCode = language
+                override val isLoaded: Boolean = false
+                override suspend fun load() { throw RuntimeException("TTS out of memory") }
+                override suspend fun synthesize(request: SpeechSynthesisRequest) = throw NotImplementedError()
+                override suspend fun unload() { log.events += "unload-tts-fail" }
+            }
+        }
+        val manager = ActiveLanguageSessionManager(factory)
+        var threw = false
+        try {
+            manager.switchTo(LanguageCode.HINDI)
+        } catch (e: RuntimeException) {
+            threw = true
+        }
+        assertTrue("Expected exception to propagate", threw)
+        assertEquals(LanguageSessionState.ERROR, manager.sessionState.value)
+        assertEquals(null, manager.activeLanguage.value)
+        assertEquals(null, manager.currentSttEngine)
+        assertEquals(null, manager.currentTtsEngine)
+        assertTrue("STT should have been loaded", log.events.contains("load-stt-hi"))
+        assertTrue("STT should have been cleaned up on failure", log.events.contains("unload-stt-hi"))
+    }
+
+    @Test
+    fun `manager with CORE_ONLY capability detector refuses heavy model loading and sets ERROR`() = runTest {
+        val log = EventLog()
+        val detector = object : DeviceCapabilityDetector(null) {
+            override fun determineProfile(): CapabilityProfile = CapabilityProfile.CORE_ONLY
+        }
+        val manager = ActiveLanguageSessionManager(fakeFactory(log), detector)
+        manager.switchTo(LanguageCode.HINDI)
+        assertEquals(LanguageSessionState.ERROR, manager.sessionState.value)
+        assertEquals(null, manager.activeLanguage.value)
+        assertEquals(null, manager.currentSttEngine)
+        assertEquals(null, manager.currentTtsEngine)
+        assertTrue("No load events should occur on CORE_ONLY", log.events.isEmpty())
+    }
+
+    @Test
+    fun `manager with FULL_AI or STANDARD_AI capability detector allows normal model loading`() = runTest {
+        val log = EventLog()
+        val detector = object : DeviceCapabilityDetector(null) {
+            override fun determineProfile(): CapabilityProfile = CapabilityProfile.FULL_AI
+        }
+        val manager = ActiveLanguageSessionManager(fakeFactory(log), detector)
+        manager.switchTo(LanguageCode.HINDI)
+        assertEquals(LanguageSessionState.READY, manager.sessionState.value)
+        assertEquals(LanguageCode.HINDI, manager.activeLanguage.value)
+        assertTrue(log.events.contains("load-stt-hi"))
+        assertTrue(log.events.contains("load-tts-hi"))
+    }
 }

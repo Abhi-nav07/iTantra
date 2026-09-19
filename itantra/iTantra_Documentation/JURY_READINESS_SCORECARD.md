@@ -1,15 +1,15 @@
 # JURY READINESS SCORECARD
 
 **Project:** iTantra — Offline Multilingual Tactical Communication System
-**Date:** September 18, 2026
-**Git HEAD:** fa39210
+**Date:** September 19, 2026
+**Git HEAD:** 1623806
 **Branch:** main
 
 ---
 
 ## Executive Summary
 
-iTantra is an Android application providing 100% offline, secure, low-bitrate voice communication across 10 Indian languages. It uses on-device AI (STT → Text → MT → TTS) to convert spoken input in one language into synthesized speech output in another, transmitted over Bluetooth RFCOMM or Wi-Fi TCP without any internet connectivity.
+iTantra is an Android application providing secure, low-bitrate voice communication across 10 Indian languages. Runtime inference and peer communication are fully offline after required models have been provisioned. Models may be downloaded or sideloaded beforehand. It uses on-device AI (STT → Text → MT → TTS) to convert spoken input in one language into synthesized speech output in another, transmitted over Bluetooth RFCOMM or Wi-Fi TCP without any internet connectivity.
 
 ---
 
@@ -17,19 +17,19 @@ iTantra is an Android application providing 100% offline, secure, low-bitrate vo
 
 | Capability | Implementation | Evidence Level | Status |
 |---|---|---|---|
-| **10-Language Support** | hi, en, bn, gu, mr, kn, ml, ta, te, or | BUILD/UNIT VERIFIED | ✅ VERIFIED |
-| **Offline STT** | Sherpa-ONNX Whisper Tiny int8 (shared) | PROVISIONED | ✅ VERIFIED |
-| **Offline TTS** | Sherpa-ONNX MMS/VITS (per-language) | PROVISIONED | ✅ VERIFIED |
-| **Offline MT** | CTranslate2 JNI + IndicTrans2 200M | PROVISIONED + HOST INFERENCE VERIFIED | ✅ VERIFIED |
-| **Indic↔Indic Pivot** | English pivot via CT2 | SOURCE VERIFIED | ✅ VERIFIED |
-| **Bluetooth RFCOMM** | Point-to-point transport | SOURCE/UNIT VERIFIED | ✅ VERIFIED |
-| **Wi-Fi TCP** | Local LAN transport | SOURCE/UNIT VERIFIED | ✅ VERIFIED |
-| **AES-256-GCM Encryption** | ECDH + HKDF + SAS | AUTOMATED TESTS | ✅ VERIFIED |
-| **Replay Protection** | Nonce tracking | AUTOMATED TESTS | ✅ VERIFIED |
-| **Emergency Alerts** | Semantic IDs + SOS persistence | 100/100 AUTOMATED TESTS | ✅ VERIFIED |
-| **Background Listening** | Foreground service | SOURCE VERIFIED | ✅ VERIFIED |
-| **Low Bitrate** | <200 bytes per message | SOURCE VERIFIED | ✅ VERIFIED |
-| **VAD** | Silero VAD via Sherpa-ONNX | PROVISIONED | ✅ VERIFIED |
+| **10-Language Support** | hi, en, bn, gu, mr, kn, ml, ta, te, or | BUILD/UNIT VERIFIED | SOURCE_VERIFIED |
+| **Offline STT** | Sherpa-ONNX Whisper Tiny int8 (shared) | PROVISIONED | SOURCE_VERIFIED |
+| **Offline TTS** | Sherpa-ONNX MMS/VITS (per-language) | PROVISIONED | SOURCE_VERIFIED |
+| **Offline MT** | CTranslate2 JNI + IndicTrans2 200M | PROVISIONED + HOST INFERENCE | SOURCE/HOST_VERIFIED |
+| **Indic↔Indic Pivot** | English pivot via CT2 | SOURCE VERIFIED | SOURCE_VERIFIED |
+| **Bluetooth RFCOMM** | Point-to-point transport | SOURCE/UNIT VERIFIED | SOURCE_VERIFIED |
+| **Wi-Fi TCP** | Local LAN transport | SOURCE/LOOPBACK VERIFIED | LOOPBACK_VERIFIED |
+| **AES-256-GCM Encryption** | ECDH + HKDF + SAS | AUTOMATED TESTS | UNIT_VERIFIED |
+| **Replay Protection** | Nonce tracking | AUTOMATED TESTS | UNIT_VERIFIED |
+| **Emergency Alerts** | Semantic IDs + SOS persistence | 100/100 AUTOMATED TESTS | UNIT_VERIFIED |
+| **Background Listening** | Foreground service | SOURCE VERIFIED | SOURCE_VERIFIED |
+| **Low Bitrate** | Semantic framing (wire size: encodedFrame.size) | SOURCE VERIFIED | SOURCE_VERIFIED |
+| **VAD** | Silero VAD via Sherpa-ONNX | PROVISIONED | SOURCE_VERIFIED |
 | **Physical Device Testing** | — | — | ❌ NOT_TESTED |
 | **Physical 2-Peer Testing** | — | — | ❌ NOT_TESTED |
 | **Real WER Measurement** | — | — | ❌ NOT_TESTED |
@@ -40,16 +40,16 @@ iTantra is an Android application providing 100% offline, secure, low-bitrate vo
 
 ## AI Model Provenance
 
-| Component | Model | Source Repository | License | Size |
+| Component | Model | Source Repository | License Breakdown | Size |
 |---|---|---|---|---|
-| STT | Whisper Tiny int8 | csukuangfj/sherpa-onnx-whisper-tiny | Apache 2.0 / MIT | ~99 MB |
-| TTS (×10) | MMS/VITS ONNX | willwade/mms-tts-multilingual-models-onnx | CC-BY-NC 4.0 | ~1.21 GB |
-| MT indic→en | IndicTrans2 CT2 200M | adalat-ai/ct2-rotary-indictrans2-indic-en-dist-200M | MIT / CC-BY-4.0 | ~816 MB |
-| MT en→indic | IndicTrans2 CT2 200M | adalat-ai/ct2-rotary-indictrans2-en-indic-dist-200M | MIT / CC-BY-4.0 | ~816 MB |
-| VAD | Silero VAD | snakers4/silero-vad | MIT | ~2 MB |
+| STT | Whisper Tiny int8 | csukuangfj/sherpa-onnx-whisper-tiny | Runtime: Apache 2.0 / Model: MIT | ~99 MB |
+| TTS (×10) | MMS/VITS ONNX | willwade/mms-tts-multilingual-models-onnx | Runtime: Apache 2.0 / Model: CC-BY-NC 4.0 | ~1.21 GB |
+| MT indic→en | IndicTrans2 CT2 200M | adalat-ai/ct2-rotary-indictrans2-indic-en-dist-200M | Runtime: MIT / Model: CC-BY-4.0 | ~816 MB |
+| MT en→indic | IndicTrans2 CT2 200M | adalat-ai/ct2-rotary-indictrans2-en-indic-dist-200M | Runtime: MIT / Model: CC-BY-4.0 | ~816 MB |
+| VAD | Silero VAD | snakers4/silero-vad | Model & Code: MIT | ~2 MB |
 
-**Total Model Storage:** ~2.87 GB
-**APK Size:** ~136 MB
+**ACTIVE_RUNTIME_MODEL_STORE:** 3,082,861,487 bytes (2,940.05 MB / 2.87 GiB)
+**APK_SIZE:** 142,801,738 bytes (~136.19 MB)
 
 ---
 

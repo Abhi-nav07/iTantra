@@ -1,13 +1,13 @@
 # ISRO Evaluator Q&A
 
 **Q: Why text instead of audio over the network?**
-A: Audio streaming requires high sustained bandwidth and falls apart in degraded RFCOMM environments. By running STT locally and transmitting semantic text packets, we reduce the payload to under 200 bytes, drastically increasing the reliability of tactical edge transmissions.
+A: Audio streaming requires high sustained bandwidth and falls apart in degraded RFCOMM environments. By running STT locally and transmitting semantic text packets, typical semantic messages are designed to remain small; actual wire size is measured from encodedFrame.size, drastically increasing the reliability of tactical edge transmissions.
 
 **Q: Why is the bitrate so low?**
 A: To guarantee delivery in dense jungles, disaster zones, or degraded Bluetooth conditions where packet loss is high. Small payloads allow our re-transmission logic to work without stalling the entire socket.
 
 **Q: What happens if there is no internet (offline)?**
-A: iTantra is 100% offline. All models (STT, TTS, MT) are loaded locally on the Android device from provisioned model files. Nothing is sent to the cloud.
+A: Runtime inference and peer communication are fully offline after required models have been provisioned. Models may be downloaded or sideloaded beforehand. All models (STT, TTS, MT) are loaded locally on the Android device from provisioned model files. Nothing is sent to the cloud.
 
 **Q: Why use a synthetic receiver voice (TTS)?**
 A: Because we transmit semantic text, the receiving device must synthesize the voice locally so the operator doesn't need to look at the screen in high-stress situations.
@@ -40,7 +40,7 @@ A: The user can type the message manually, or try again. The app will never tran
 A: The app gracefully falls back, transferring the native transcription and informing the receiver that cross-language translation failed.
 
 **Q: How many bytes per message?**
-A: Usually under 200 bytes for a text sentence, padded with a 32-byte header and 4-byte CRC, strictly clamped below 16KB max payload limits.
+A: Typical semantic messages are designed to remain small; actual wire size is measured from encodedFrame.size (composed of a 32-byte header, ciphertext payload, 4-byte CRC, and 4-byte frame length prefix), strictly clamped below 16KB max payload limits.
 
 **Q: Bluetooth vs Wi-Fi?**
 A: Bluetooth RFCOMM is the primary point-to-point link for peer-to-peer communication (NOT a mesh protocol). Local Wi-Fi TCP is available as a higher-bandwidth, longer-range alternative when a local LAN exists (even without internet).

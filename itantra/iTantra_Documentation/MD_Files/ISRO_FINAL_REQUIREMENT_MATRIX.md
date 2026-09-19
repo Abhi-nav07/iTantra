@@ -9,9 +9,9 @@
 | PTT | Press/release in `TransceiverCoordinator` | PttButton UI + flow | L1 BUILD/UNIT VERIFIED | VERIFIED | None |
 | Continuous mode | `ContinuousListenEngine` + `OperationalForegroundService` | Foreground service keeps STT active in background | L1 BUILD/UNIT VERIFIED | VERIFIED | None |
 | Pause/VAD segmentation | Silero VAD via Sherpa-ONNX native | `silero_vad.onnx` provisioned | L1 BUILD/UNIT VERIFIED | PROVISIONED | Native Sherpa VAD integration |
-| Bluetooth | `BluetoothPeerTransport` RFCOMM | Point-to-point stream transport | L1 BUILD/UNIT VERIFIED | VERIFIED | NOT mesh — direct 1:1 RFCOMM |
-| Wi-Fi | `WifiPeerTransport` TCP | Local LAN peer transport | L1 BUILD/UNIT VERIFIED | VERIFIED | None |
-| Low bitrate | Semantic text via `ItantraPacket` | `PacketEncoder`/`PacketDecoder` tests passing | L1 BUILD/UNIT VERIFIED | VERIFIED | <200 bytes per message |
+| Bluetooth | `BluetoothPeerTransport` RFCOMM | Point-to-point stream transport | SOURCE/UNIT VERIFIED | SOURCE/UNIT VERIFIED | NOT mesh — direct 1:1 RFCOMM. Physical: NOT_TESTED |
+| Wi-Fi | `WifiPeerTransport` TCP | Local LAN peer transport | SOURCE/LOOPBACK VERIFIED | SOURCE/LOOPBACK VERIFIED | Physical: NOT_TESTED |
+| Low bitrate | Semantic text via `ItantraPacket` | `PacketEncoder`/`PacketDecoder` tests passing | SOURCE_VERIFIED | SOURCE_VERIFIED | Typical semantic messages are designed to remain small; actual wire size is measured from encodedFrame.size. |
 | Latency | `InferenceMetricsRecorder` + `LATENCY_MATRIX.md` | Code for TTFA/RTF + simulated loopback | L1 BUILD/UNIT VERIFIED | SIMULATED | Physical device NOT_TESTED |
 | RAM/storage | `DeviceCapabilityDetector` + `ActiveLanguageSessionManager` | Dynamic unloading + RAM profiling | L1 BUILD/UNIT VERIFIED | VERIFIED | Physical PSS NOT_TESTED |
 | WER | `WordErrorRateCalculator` + benchmark framework | Per-language benchmark JSON + test suite | L1 BUILD/UNIT VERIFIED | FRAMEWORK_READY | Physical WER NOT_TESTED |

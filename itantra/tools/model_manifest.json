@@ -211,7 +211,7 @@
     "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
     "verified": true,
     "sha256": {
-      "model.onnx": "c44b4179e7ff0da4d76eac3929fc1dbd67c51f02da8fca083c445e17450c3f75",
+      "model.onnx": "c44055b2e7c5719ca26708f6eb03680b0f1bbf6fdcb0df6480478f872f1f6e34",
       "tokens.txt": "0b3f692319bb5fae8658e2f84bf252bca92450d0207bbba7273caa1a182d81b8"
     }
   },

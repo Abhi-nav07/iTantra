@@ -2,6 +2,7 @@ package com.itantra.app
 
 import android.content.Context
 import com.itantra.core.inference.ActiveLanguageSessionManager
+import com.itantra.core.inference.DeviceCapabilityDetector
 import com.itantra.core.inference.EngineFactory
 import com.itantra.core.inference.SherpaOnnxSpeechRecognizer
 import com.itantra.core.inference.SpeechRecognizerEngine
@@ -58,7 +59,10 @@ object AppGraph {
                 )
             }
         }
-        ActiveLanguageSessionManager(factory)
+        ActiveLanguageSessionManager(
+            engineFactory = factory,
+            capabilityDetector = DeviceCapabilityDetector(context)
+        )
     }
 
     val bluetoothPeerTransport: com.itantra.core.transport.peer.BluetoothPeerTransport by lazy {

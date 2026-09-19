@@ -141,14 +141,16 @@ class CTranslate2TranslationEngine : TranslationEngine {
         if (indicEnHandle == 0L) return null
         val sourceTag = getTag(source)
         val targetTag = getTag(LanguageCode.ENGLISH)
-        return nativeTranslate(indicEnHandle, text, sourceTag, targetTag)
+        val devanagariText = IndicScriptTransliterator.toDevanagari(text, source)
+        return nativeTranslate(indicEnHandle, devanagariText, sourceTag, targetTag)
     }
 
     private fun translateEnToIndic(text: String, target: LanguageCode): String? {
         if (enIndicHandle == 0L) return null
         val sourceTag = getTag(LanguageCode.ENGLISH)
         val targetTag = getTag(target)
-        return nativeTranslate(enIndicHandle, text, sourceTag, targetTag)
+        val raw = nativeTranslate(enIndicHandle, text, sourceTag, targetTag) ?: return null
+        return IndicScriptTransliterator.fromDevanagari(raw, target)
     }
 
     private fun getTag(lang: LanguageCode): String {

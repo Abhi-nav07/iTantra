@@ -79,6 +79,8 @@ class ActiveLanguageSessionManager(
                 return@withLock
             }
 
+            var stt: SpeechRecognizerEngine? = null
+            var tts: SpeechSynthesizerEngine? = null
             try {
                 currentSttEngine?.unload()
                 currentTtsEngine?.unload()
@@ -86,14 +88,12 @@ class ActiveLanguageSessionManager(
                 currentTtsEngine = null
                 _activeLanguage.value = null
 
-                var stt: SpeechRecognizerEngine? = null
                 if (loadStt) {
                     _sessionState.value = LanguageSessionState.LOADING_STT
                     stt = engineFactory.createRecognizer(target)
                     stt?.load()
                 }
 
-                var tts: SpeechSynthesizerEngine? = null
                 if (loadTts) {
                     _sessionState.value = LanguageSessionState.LOADING_TTS
                     tts = engineFactory.createSynthesizer(target)
@@ -104,14 +104,16 @@ class ActiveLanguageSessionManager(
                 currentTtsEngine = tts
                 _activeLanguage.value = target
                 _sessionState.value = LanguageSessionState.READY
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (e: Throwable) {
                 _sessionState.value = LanguageSessionState.ERROR
+                stt?.unload()
+                tts?.unload()
                 currentSttEngine?.unload()
                 currentTtsEngine?.unload()
                 currentSttEngine = null
                 currentTtsEngine = null
                 _activeLanguage.value = null
+                throw e
             }
         }
     }
