@@ -38,6 +38,7 @@ enum class LanguageSessionState {
 
 class ActiveLanguageSessionManager(
     private val engineFactory: EngineFactory = EngineFactory.NoOp,
+    private val capabilityDetector: DeviceCapabilityDetector? = null
 ) {
     private val switchMutex = Mutex()
 
@@ -61,10 +62,22 @@ class ActiveLanguageSessionManager(
      *  - if loading the new engines fails, no language is left "active"
      *    with partially-loaded resources — state falls back to null and
      *    the exception propagates for the caller to surface.
+     *  - on CORE_ONLY constrained devices, refuses heavy neural model loads
+     *    to guard against OOM while keeping emergency text active.
      */
     suspend fun switchTo(target: LanguageCode, loadStt: Boolean = true, loadTts: Boolean = true) {
         switchMutex.withLock {
             if (_activeLanguage.value == target && _sessionState.value == LanguageSessionState.READY) return@withLock
+
+            if (capabilityDetector?.determineProfile() == DeviceCapabilityDetector.CapabilityProfile.CORE_ONLY) {
+                currentSttEngine?.unload()
+                currentTtsEngine?.unload()
+                currentSttEngine = null
+                currentTtsEngine = null
+                _activeLanguage.value = null
+                _sessionState.value = LanguageSessionState.ERROR
+                return@withLock
+            }
 
             try {
                 currentSttEngine?.unload()

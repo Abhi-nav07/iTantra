@@ -25,13 +25,13 @@ Java_com_itantra_core_translation_CTranslate2TranslationEngine_nativeCreateEngin
 
     try {
         auto* engine = new TranslationEngine();
-        
+
         // CTranslate2 configuration
         engine->translator = std::make_unique<ctranslate2::Translator>(modelPath, ctranslate2::Device::CPU);
         // Load sentencepiece models from the vocab directory
         engine->sp_source = std::make_unique<sentencepiece::SentencePieceProcessor>();
         engine->sp_target = std::make_unique<sentencepiece::SentencePieceProcessor>();
-        
+
         auto src_status = engine->sp_source->Load(modelPath + "/vocab/model.SRC");
         if (!src_status.ok()) {
              // Fallback if vocab is in same directory
@@ -48,8 +48,13 @@ Java_com_itantra_core_translation_CTranslate2TranslationEngine_nativeCreateEngin
         if (!tgt_status.ok()) {
              tgt_status = engine->sp_target->Load(modelPath + "/model.TGT");
              if (!tgt_status.ok()) {
-                 // target might be the same as source for IndicTrans2. If it fails, fallback to source.
-                 engine->sp_target->Load(modelPath + "/model.SRC");
+                 tgt_status = engine->sp_target->Load(modelPath + "/model.SRC");
+                 if (!tgt_status.ok()) {
+                     delete engine;
+                     jclass exClass = env->FindClass("java/lang/RuntimeException");
+                     env->ThrowNew(exClass, "Failed to load target SentencePiece model.");
+                     return 0;
+                 }
              }
         }
 
@@ -88,7 +93,7 @@ Java_com_itantra_core_translation_CTranslate2TranslationEngine_nativeTranslate(
     const char* c_text = env->GetStringUTFChars(textStr, nullptr);
     const char* c_sourceTag = env->GetStringUTFChars(sourceTagStr, nullptr);
     const char* c_targetTag = env->GetStringUTFChars(targetTagStr, nullptr);
-    
+
     std::string text(c_text);
     std::string sourceTag(c_sourceTag);
     std::string targetTag(c_targetTag);
@@ -102,20 +107,16 @@ Java_com_itantra_core_translation_CTranslate2TranslationEngine_nativeTranslate(
         std::vector<std::string> sp_tokens;
         engine->sp_source->Encode(text, &sp_tokens);
 
-        // 2. Add AI4Bharat tags. Typically IndicTrans2 requires <2eng> or similar target tag
-        // at the end or beginning. AI4Bharat usually requires it at the start or end of the token sequence.
-        // For IndicTrans2: `<2eng>` etc. Wait, we should probably handle tag insertion in Kotlin or carefully here.
-        // If Kotlin passes the tag in `targetTag`, we prepend/append it. Let's prepend the targetTag.
-        // Actually IndicTrans2 uses `__<targetTag>__` as the target language tag in some setups, or `<2eng>`.
-        // We will pass the exact tag token from Kotlin.
+        // 2. Add AI4Bharat tags.
+        // Official IndicTrans2 expects [SRC_LANG, TGT_LANG, *SP_TOKENS]
         std::vector<std::string> source_tokens;
         if (!sourceTag.empty()) {
-            source_tokens.push_back(sourceTag); // Some models expect source tag
+            source_tokens.push_back(sourceTag);
         }
         if (!targetTag.empty()) {
             source_tokens.push_back(targetTag);
         }
-        
+
         // Insert sp_tokens
         source_tokens.insert(source_tokens.end(), sp_tokens.begin(), sp_tokens.end());
 
@@ -141,5 +142,56 @@ Java_com_itantra_core_translation_CTranslate2TranslationEngine_nativeTranslate(
         jclass exClass = env->FindClass("java/lang/RuntimeException");
         env->ThrowNew(exClass, e.what());
         return env->NewStringUTF("");
+    }
+}
+
+extern "C" JNIEXPORT jobjectArray JNICALL
+Java_com_itantra_core_translation_CTranslate2TranslationEngine_nativePrepareInputForTest(
+        JNIEnv* env,
+        jobject /* this */,
+        jlong handle,
+        jstring textStr,
+        jstring sourceTagStr,
+        jstring targetTagStr) {
+    if (handle == 0) return nullptr;
+
+    auto* engine = reinterpret_cast<TranslationEngine*>(handle);
+    std::lock_guard<std::mutex> lock(engine->mtx);
+
+    const char* c_text = env->GetStringUTFChars(textStr, nullptr);
+    const char* c_sourceTag = env->GetStringUTFChars(sourceTagStr, nullptr);
+    const char* c_targetTag = env->GetStringUTFChars(targetTagStr, nullptr);
+
+    std::string text(c_text);
+    std::string sourceTag(c_sourceTag);
+    std::string targetTag(c_targetTag);
+
+    env->ReleaseStringUTFChars(textStr, c_text);
+    env->ReleaseStringUTFChars(sourceTagStr, c_sourceTag);
+    env->ReleaseStringUTFChars(targetTagStr, c_targetTag);
+
+    try {
+        std::vector<std::string> sp_tokens;
+        engine->sp_source->Encode(text, &sp_tokens);
+
+        std::vector<std::string> source_tokens;
+        if (!sourceTag.empty()) {
+            source_tokens.push_back(sourceTag);
+        }
+        if (!targetTag.empty()) {
+            source_tokens.push_back(targetTag);
+        }
+        source_tokens.insert(source_tokens.end(), sp_tokens.begin(), sp_tokens.end());
+
+        jclass stringClass = env->FindClass("java/lang/String");
+        jobjectArray result = env->NewObjectArray(source_tokens.size(), stringClass, env->NewStringUTF(""));
+        for (size_t i = 0; i < source_tokens.size(); ++i) {
+            env->SetObjectArrayElement(result, i, env->NewStringUTF(source_tokens[i].c_str()));
+        }
+        return result;
+    } catch (const std::exception& e) {
+        jclass exClass = env->FindClass("java/lang/RuntimeException");
+        env->ThrowNew(exClass, e.what());
+        return nullptr;
     }
 }

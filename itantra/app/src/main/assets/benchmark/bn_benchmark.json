@@ -1,0 +1,146 @@
+[
+  {
+    "id": "BN-001",
+    "category": "GREETINGS",
+    "referenceText": "নমস্কার, আপনি কেমন আছেন?",
+    "isCritical": false
+  },
+  {
+    "id": "BN-002",
+    "category": "GREETINGS",
+    "referenceText": "সুপ্রভাত, আপনার দিনটি ভালো কাটুক।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-003",
+    "category": "GREETINGS",
+    "referenceText": "আপনার সাথে দেখা করে খুব ভালো লাগলো।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-004",
+    "category": "SIMPLE_SPEECH",
+    "referenceText": "আমার নাম রাহুল এবং আমি এখানে সেচ্ছাসেবক।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-005",
+    "category": "NUMBERS",
+    "referenceText": "এখানে একশোর বেশি মানুষ আটকে আছেন।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-006",
+    "category": "NUMBERS",
+    "referenceText": "আমার ফোন নম্বর আট নয় দুই।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-007",
+    "category": "NUMBERS",
+    "referenceText": "পঞ্চাশ প্যাকেট ত্রাণ এবং জল প্রয়োজন।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-008",
+    "category": "LOCATION",
+    "referenceText": "হাসপাতাল এখান থেকে প্রায় পাঁচ কিলোমিটার দূরে।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-009",
+    "category": "LOCATION",
+    "referenceText": "ব্রিজের সামনে জলের স্রোত খুব তীব্র।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-010",
+    "category": "LOCATION",
+    "referenceText": "আমরা উত্তর দিকে এগিয়ে যাচ্ছি।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-011",
+    "category": "EMERGENCY",
+    "referenceText": "দয়া করে অবিলম্বে উদ্ধারকারী দল পাঠান।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-012",
+    "category": "EMERGENCY",
+    "referenceText": "বন্যার জল গ্রামে প্রবেশ করেছে।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-013",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "সব যোগাযোগ বিচ্ছিন্ন, রেডিও চালু রাখুন।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-014",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "মেডিকেল টিমকে দ্রুত নিরাপদ আশ্রয়ে নিয়ে আসুন।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-015",
+    "category": "CONVERSATION",
+    "referenceText": "আপনার কাছে কি অতিরিক্ত ব্যাটারি আছে?",
+    "isCritical": false
+  },
+  {
+    "id": "BN-016",
+    "category": "CONVERSATION",
+    "referenceText": "স্থানীয় প্রশাসন সবাইকে সতর্ক থাকতে বলেছে।",
+    "isCritical": false
+  },
+  {
+    "id": "BN-CRIT-017",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "অবিলম্বে খালি করুন",
+    "isCritical": true
+  },
+  {
+    "id": "BN-CRIT-018",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "খালি করবেন না",
+    "isCritical": true
+  },
+  {
+    "id": "BN-CRIT-019",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "রাস্তা খোলা আছে",
+    "isCritical": true
+  },
+  {
+    "id": "BN-CRIT-020",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "রাস্তা বন্ধ আছে",
+    "isCritical": true
+  },
+  {
+    "id": "BN-CRIT-021",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "রোগী সচেতন আছেন",
+    "isCritical": true
+  },
+  {
+    "id": "BN-CRIT-022",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "রোগী অচেতন আছেন",
+    "isCritical": true
+  },
+  {
+    "id": "BN-CRIT-023",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "আগুন নিয়ন্ত্রণে আছে",
+    "isCritical": true
+  },
+  {
+    "id": "BN-CRIT-024",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "আগুন নিয়ন্ত্রণে নেই",
+    "isCritical": true
+  }
+]

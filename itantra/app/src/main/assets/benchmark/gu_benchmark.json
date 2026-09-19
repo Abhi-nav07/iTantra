@@ -1,0 +1,146 @@
+[
+  {
+    "id": "GU-001",
+    "category": "GREETINGS",
+    "referenceText": "નમસ્તે, તમે કેમ છો?",
+    "isCritical": false
+  },
+  {
+    "id": "GU-002",
+    "category": "GREETINGS",
+    "referenceText": "સુપ્રભાત, તમારો દિવસ સારો રહે.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-003",
+    "category": "GREETINGS",
+    "referenceText": "તમને મળીને ખૂબ આનંદ થયો.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-004",
+    "category": "SIMPLE_SPEECH",
+    "referenceText": "મારું નામ રાહુલ છે અને હું અહીં સ્વયંસેવક છું.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-005",
+    "category": "NUMBERS",
+    "referenceText": "અહીં સોથી વધુ લોકો ફસાયેલા છે.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-006",
+    "category": "NUMBERS",
+    "referenceText": "મારો ફોન નંબર આઠ નવ બે છે.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-007",
+    "category": "NUMBERS",
+    "referenceText": "પચાસ પેકેટ રાશન અને પાણીની જરૂર છે.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-008",
+    "category": "LOCATION",
+    "referenceText": "હોસ્પિટલ અહીંથી લગભગ પાંચ કિલોમીટર દૂર છે.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-009",
+    "category": "LOCATION",
+    "referenceText": "પુલ આગળ પાણીનો પ્રવાહ ખૂબ ઝડપી છે.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-010",
+    "category": "LOCATION",
+    "referenceText": "અમે ઉત્તર દિશા તરફ આગળ વધી રહ્યા છીએ.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-011",
+    "category": "EMERGENCY",
+    "referenceText": "કૃપા કરીને તરત જ બચાવ ટીમ મોકલો.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-012",
+    "category": "EMERGENCY",
+    "referenceText": "પૂરના પાણી ગામમાં પ્રવેશી ગયા છે.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-013",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "સંચાર વ્યવસ્થા બંધ છે, રેડિયો ચાલુ રાખો.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-014",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "મેડિકલ ટીમને તાત્કાલિક સુરક્ષિત સ્થળે પહોંચાડો.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-015",
+    "category": "CONVERSATION",
+    "referenceText": "શું તમારી પાસે વધારાની બેટરીઓ ઉપલબ્ધ છે?",
+    "isCritical": false
+  },
+  {
+    "id": "GU-016",
+    "category": "CONVERSATION",
+    "referenceText": "સ્થાનિક તંત્રએ બધાને સતર્ક રહેવા જણાવ્યું છે.",
+    "isCritical": false
+  },
+  {
+    "id": "GU-CRIT-017",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "તરત જ ખાલી કરો",
+    "isCritical": true
+  },
+  {
+    "id": "GU-CRIT-018",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ખાલી કરશો નહીં",
+    "isCritical": true
+  },
+  {
+    "id": "GU-CRIT-019",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "રસ્તો ખુલ્લો છે",
+    "isCritical": true
+  },
+  {
+    "id": "GU-CRIT-020",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "રસ્તો બંધ છે",
+    "isCritical": true
+  },
+  {
+    "id": "GU-CRIT-021",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "દર્દી ભાનમાં છે",
+    "isCritical": true
+  },
+  {
+    "id": "GU-CRIT-022",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "દર્દી બેભાન છે",
+    "isCritical": true
+  },
+  {
+    "id": "GU-CRIT-023",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "આગ કાબૂમાં છે",
+    "isCritical": true
+  },
+  {
+    "id": "GU-CRIT-024",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "આગ કાબૂમાં નથી",
+    "isCritical": true
+  }
+]

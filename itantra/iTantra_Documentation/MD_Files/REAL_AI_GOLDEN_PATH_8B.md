@@ -1,28 +1,31 @@
 # Module 8B: Real AI Golden Path (Offline)
 
 ## Architecture Overview
-The 8B Golden Path validation confirms the transition from model-loading scaffolds to genuine ONNX tensor manipulation. The goal of this phase is to ensure the codebase can natively execute IndicTrans2 auto-regressive generation without any fake/stub code, while maintaining deterministic same-language bypasses.
+The 8B Golden Path confirms the transition from model-loading scaffolds to genuine native inference. The codebase natively executes IndicTrans2 via CTranslate2 JNI for auto-regressive generation, Whisper Tiny via Sherpa-ONNX for STT, and MMS/VITS via Sherpa-ONNX for TTS. All 10 ISRO languages are provisioned.
 
 ## Execution Matrix
 
 | Requirement | Status | Notes |
 |---|---|---|
-| **Same-Language MT Bypass** | VERIFIED | TranslationRouter.kt identically bypasses hi->hi avoiding MT pipeline completely. |
-| **Cross-Language MT Logic** | VERIFIED | RealTranslationEngine.kt uses i.onnxruntime.OnnxTensor execution instead of UnsupportedOperationException. |
+| **Same-Language MT Bypass** | VERIFIED | CTranslate2TranslationEngine.kt bypasses MT when sourceLang == targetLang. |
+| **Cross-Language MT Logic** | VERIFIED | CTranslate2TranslationEngine.kt uses native CTranslate2 JNI with SentencePiece tokenization and FLORES language tags. |
+| **Indic-Indic Pivot** | VERIFIED | CTranslate2TranslationEngine.kt chains indic-en then en-indic for cross-Indic translation. |
 | **Structured Failure** | VERIFIED | Missing model files trigger MODEL_NOT_INSTALLED, preventing packetization of fake/empty strings. |
-| **No Sentinel Strings** | VERIFIED | Codebase audited to remove any remaining "identity translations" or faux successful outputs. |
+| **No Sentinel Strings** | VERIFIED | Codebase audited to remove any remaining identity translations or faux successful outputs. |
+| **Host MT Inference** | VERIFIED | tools/host_mt_test.py confirmed real CTranslate2 inference on provisioned models. |
 
 ## Physical Device & Emulator Limitations
-The local environment lacks physical devices, the AVD emulator (emulator.exe), and cannot safely download multi-GB neural weights (IndicTrans2) via automated pipeline due to container bandwidth/OOM constraints. Therefore:
+The automated validation environment lacks physical Android devices. Therefore:
 
-- **Hardware Tests:** BLOCKED.
-- **Microphone E2E:** BLOCKED.
-- **Model Quantization/Execution:** STUB EXECUTIONS REMOVED, BUT REAL INFERENCE BLOCKED DUE TO MISSING TENSORS.
+- **Hardware Tests:** NOT_TESTED (requires physical device).
+- **Microphone E2E:** NOT_TESTED (requires physical device microphone).
+- **Model Inference on Device:** SOURCE VERIFIED, DEVICE NOT_TESTED.
 
 ## Reproducible Provisioning Strategy
-Because automated local provisioning is blocked, the exact commands to produce the Golden Path have been isolated in 	ools/provision_models.py.
+Exact model provisioning is automated via `tools/provision_models.py` with SHA256 verification.
 
-This script natively fetches the verified models:
-- **STT:** indicconformer-sherpa-onnx (Hindi, English)
-- **MT:** indictrans2-en-indic / indictrans2-indic-en (INT8)
-- **TTS:** its-mms (hin, eng)
+This script fetches the verified models:
+- **STT:** Whisper Tiny int8 via Sherpa-ONNX (shared multilingual, all 10 languages)
+- **MT:** IndicTrans2 200M Distilled CT2 (indic-en + en-indic)
+- **TTS:** MMS/VITS ONNX (per-language, all 10 languages)
+- **VAD:** Silero VAD ONNX

@@ -1,0 +1,146 @@
+[
+  {
+    "id": "KN-001",
+    "category": "GREETINGS",
+    "referenceText": "ನಮಸ್ಕಾರ, ನೀವು ಹೇಗಿದ್ದೀರಿ?",
+    "isCritical": false
+  },
+  {
+    "id": "KN-002",
+    "category": "GREETINGS",
+    "referenceText": "ಶುಭೋದಯ, ನಿಮ್ಮ ದಿನ ಶುಭವಾಗಿರಲಿ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-003",
+    "category": "GREETINGS",
+    "referenceText": "ನಿಮ್ಮನ್ನು ಭೇಟಿಯಾಗಿದ್ದು ತುಂಬಾ ಸಂತೋಷವಾಯಿತು.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-004",
+    "category": "SIMPLE_SPEECH",
+    "referenceText": "ನನ್ನ ಹೆಸರು ರಾಹುಲ್ ಮತ್ತು ನಾನು ಸ್ವಯಂಸೇವಕ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-005",
+    "category": "NUMBERS",
+    "referenceText": "ಇಲ್ಲಿ ನೂರಕ್ಕೂ ಹೆಚ್ಚು ಜನರು ಸಿಲುಕಿಕೊಂಡಿದ್ದಾರೆ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-006",
+    "category": "NUMBERS",
+    "referenceText": "ನನ್ನ ಫೋನ್ ಸಂಖ್ಯೆ ಎಂಟು ಒಂಬತ್ತು ಎರಡು.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-007",
+    "category": "NUMBERS",
+    "referenceText": "ಐವತ್ತು ಪ್ಯಾಕೆಟ್ ಆಹಾರ ಮತ್ತು ನೀರಿನ ಅಗತ್ಯವಿದೆ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-008",
+    "category": "LOCATION",
+    "referenceText": "ಆಸ್ಪತ್ರೆ ಇಲ್ಲಿಂದ ಸುಮಾರು ಐದು ಕಿಲೋಮೀಟರ್ ದೂರದಲ್ಲಿದೆ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-009",
+    "category": "LOCATION",
+    "referenceText": "ಸೇತುವೆಯ ಮುಂದೆ ನೀರಿನ ಹರಿವು ತುಂಬಾ ತೀವ್ರವಾಗಿದೆ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-010",
+    "category": "LOCATION",
+    "referenceText": "ನಾವು ಉತ್ತರ ದಿಕ್ಕಿನತ್ತ ಸಾಗುತ್ತಿದ್ದೇವೆ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-011",
+    "category": "EMERGENCY",
+    "referenceText": "ದಯವಿಟ್ಟು ತಕ್ಷಣ ರಕ್ಷಣಾ ತಂಡವನ್ನು ಕಳುಹಿಸಿ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-012",
+    "category": "EMERGENCY",
+    "referenceText": "ಪ್ರವಾಹದ ನೀರು ಹಳ್ಳಿಗೆ ನುಗ್ಗಿದೆ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-013",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "ಸಂಪರ್ಕ ವ್ಯವಸ್ಥೆ ಸ್ಥಗಿತಗೊಂಡಿದೆ, ರೇಡಿಯೋ ಆನ್ ಆಗಿರಲಿ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-014",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "ವೈದ್ಯಕೀಯ ತಂಡವನ್ನು ತಕ್ಷಣ ಸುರಕ್ಷಿತ ಸ್ಥಳಕ್ಕೆ ತಲುಪಿಸಿ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-015",
+    "category": "CONVERSATION",
+    "referenceText": "ನಿಮ್ಮ ಬಳಿ ಹೆಚ್ಚುವರಿ ಬ್ಯಾಟರಿಗಳು ಲಭ್ಯವಿದೆಯೇ?",
+    "isCritical": false
+  },
+  {
+    "id": "KN-016",
+    "category": "CONVERSATION",
+    "referenceText": "ಸ್ಥಳೀಯ ಆಡಳಿತವು ಎಲ್ಲರಿಗೂ ಎಚ್ಚರಿಕೆಯಿಂದಿರಲು ಸೂಚಿಸಿದೆ.",
+    "isCritical": false
+  },
+  {
+    "id": "KN-CRIT-017",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ತಕ್ಷಣ ಖಾಲಿ ಮಾಡಿ",
+    "isCritical": true
+  },
+  {
+    "id": "KN-CRIT-018",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ಖಾಲಿ ಮಾಡಬೇಡಿ",
+    "isCritical": true
+  },
+  {
+    "id": "KN-CRIT-019",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ರಸ್ತೆ ತೆರೆದಿದೆ",
+    "isCritical": true
+  },
+  {
+    "id": "KN-CRIT-020",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ರಸ್ತೆ ಮುಚ್ಚಿದೆ",
+    "isCritical": true
+  },
+  {
+    "id": "KN-CRIT-021",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ರೋಗಿ ಪ್ರಜ್ಞೆಯಲ್ಲಿದ್ದಾರೆ",
+    "isCritical": true
+  },
+  {
+    "id": "KN-CRIT-022",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ರೋಗಿ ಪ್ರಜ್ಞಾಹೀನರಾಗಿದ್ದಾರೆ",
+    "isCritical": true
+  },
+  {
+    "id": "KN-CRIT-023",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ಬೆಂಕಿ ನಿಯಂತ್ರಣದಲ್ಲಿದೆ",
+    "isCritical": true
+  },
+  {
+    "id": "KN-CRIT-024",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ಬೆಂಕಿ ನಿಯಂತ್ರಣದಲ್ಲಿಲ್ಲ",
+    "isCritical": true
+  }
+]

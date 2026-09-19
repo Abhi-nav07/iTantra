@@ -1,0 +1,146 @@
+[
+  {
+    "id": "TE-001",
+    "category": "GREETINGS",
+    "referenceText": "నమస్కారం, మీరు ఎలా ఉన్నారు?",
+    "isCritical": false
+  },
+  {
+    "id": "TE-002",
+    "category": "GREETINGS",
+    "referenceText": "శుభోదయం, మీకు మంచి రోజు కావాలని కోరుకుంటున్నాను.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-003",
+    "category": "GREETINGS",
+    "referenceText": "మిమ్మల్ని కలవడం చాలా సంతోషంగా ఉంది.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-004",
+    "category": "SIMPLE_SPEECH",
+    "referenceText": "నా పేరు రాహుల్, నేను వాలంటీర్‌గా పని చేస్తున్నాను.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-005",
+    "category": "NUMBERS",
+    "referenceText": "ఇక్కడ వంద మందికి పైగా చిక్కుకున్నారు.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-006",
+    "category": "NUMBERS",
+    "referenceText": "నా ఫోన్ నంబర్ ఎనిమిది తొమ్మిది రెండు.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-007",
+    "category": "NUMBERS",
+    "referenceText": "యాభై ప్యాకెట్ల ఆహారం మరియు నీరు అవసరం.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-008",
+    "category": "LOCATION",
+    "referenceText": "ఆసుపత్రి ఇక్కడి నుంచి దాదాపు ఐదు కిలోమీటర్ల దూరంలో ఉంది.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-009",
+    "category": "LOCATION",
+    "referenceText": "వంతెన ముందు నీటి ప్రవాహం చాలా వేగంగా ఉంది.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-010",
+    "category": "LOCATION",
+    "referenceText": "మేము ఉత్తర దిశ వైపు వెళ్తున్నాము.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-011",
+    "category": "EMERGENCY",
+    "referenceText": "దయచేసి వెంటనే సహాయక బృందాన్ని పంపండి.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-012",
+    "category": "EMERGENCY",
+    "referenceText": "వరద నీరు గ్రామంలోకి ప్రవేశించింది.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-013",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "కమ్యూనికేషన్ తెగిపోయింది, రేడియోను ఆన్ చేసి ఉంచండి.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-014",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "వైద్య బృందాన్ని త్వరగా సహాయ శిబిరానికి తరలించండి.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-015",
+    "category": "CONVERSATION",
+    "referenceText": "మీ వద్ద అదనపు బ్యాటరీలు అందుబాటులో ఉన్నాయా?",
+    "isCritical": false
+  },
+  {
+    "id": "TE-016",
+    "category": "CONVERSATION",
+    "referenceText": "స్థానిక అధికారులు అందరినీ అప్రమత్తంగా ఉండాలని కోరారు.",
+    "isCritical": false
+  },
+  {
+    "id": "TE-CRIT-017",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "వెంటనే ఖాళీ చేయండి",
+    "isCritical": true
+  },
+  {
+    "id": "TE-CRIT-018",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ఖాళీ చేయవద్దు",
+    "isCritical": true
+  },
+  {
+    "id": "TE-CRIT-019",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "రహదారి తెరిచి ఉంది",
+    "isCritical": true
+  },
+  {
+    "id": "TE-CRIT-020",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "రహదారి మూసివేయబడింది",
+    "isCritical": true
+  },
+  {
+    "id": "TE-CRIT-021",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "రోగి స్పృహలో ఉన్నాడు",
+    "isCritical": true
+  },
+  {
+    "id": "TE-CRIT-022",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "రోగి అపస్మారక స్థితిలో ఉన్నాడు",
+    "isCritical": true
+  },
+  {
+    "id": "TE-CRIT-023",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "మంటలు అదుపులో ఉన్నాయి",
+    "isCritical": true
+  },
+  {
+    "id": "TE-CRIT-024",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "మంటలు అదుపులో లేవు",
+    "isCritical": true
+  }
+]

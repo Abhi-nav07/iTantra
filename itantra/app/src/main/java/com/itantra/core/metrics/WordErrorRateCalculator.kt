@@ -9,8 +9,21 @@ data class WerResult(
     val insertions: Int,
 ) {
     val wer: Float
-        get() = if (referenceWordCount == 0) 0f else (substitutions + deletions + insertions).toFloat() / referenceWordCount
+        get() = if (referenceWordCount == 0) {
+            if (insertions > 0) 1.0f else 0f
+        } else {
+            (substitutions + deletions + insertions).toFloat() / referenceWordCount
+        }
 }
+
+data class CorpusWerResult(
+    val totalReferenceWords: Int,
+    val totalSubstitutions: Int,
+    val totalDeletions: Int,
+    val totalInsertions: Int,
+    val corpusWer: Float,
+    val meanSentenceWer: Float
+)
 
 object WordErrorRateCalculator {
 
@@ -80,6 +93,36 @@ object WordErrorRateCalculator {
             substitutions = finalState[1],
             deletions = finalState[2],
             insertions = finalState[3]
+        )
+    }
+
+    /**
+     * Calculates corpus-level WER by aggregating total substitutions, deletions, and insertions
+     * divided by total reference words across all utterances.
+     * Formula: (total S + total D + total I) / total reference words
+     */
+    fun calculateCorpusWer(results: List<WerResult>): CorpusWerResult {
+        val totalRef = results.sumOf { it.referenceWordCount }
+        val totalSub = results.sumOf { it.substitutions }
+        val totalDel = results.sumOf { it.deletions }
+        val totalIns = results.sumOf { it.insertions }
+        val corpusWer = if (totalRef == 0) {
+            if (totalIns > 0) 1.0f else 0.0f
+        } else {
+            (totalSub + totalDel + totalIns).toFloat() / totalRef
+        }
+        val meanSentenceWer = if (results.isEmpty()) {
+            0.0f
+        } else {
+            results.map { it.wer }.average().toFloat()
+        }
+        return CorpusWerResult(
+            totalReferenceWords = totalRef,
+            totalSubstitutions = totalSub,
+            totalDeletions = totalDel,
+            totalInsertions = totalIns,
+            corpusWer = corpusWer,
+            meanSentenceWer = meanSentenceWer
         )
     }
 }

@@ -2,27 +2,41 @@
   "schemaVersion": 1,
   "languageCode": "mr",
   "displayName": "Marathi",
-  "packVersion": "0.1.0-task02",
-  "downloadSizeBytes": 150000000,
-  "installedSizeBytes": 150000000,
+  "packVersion": "1.0.0",
+  "downloadSizeBytes": 217654301,
+  "installedSizeBytes": 217654301,
   "minimumAppVersion": 1,
   "sttModel": {
-    "modelId": "indicconformer-sherpa-onnx-mr",
+    "modelId": "whisper-tiny-multilingual",
     "format": "onnx",
     "quantization": "int8",
-    "checksumsSha256": {},
-    "downloadUrl": "https://huggingface.co/parismitaglobalsolutions/indicconformer-sherpa-onnx/resolve/main",
-    "files": ["mr/model.int8.onnx", "tokens.txt"],
-    "sizeBytes": 150000000
+    "checksumsSha256": {
+      "tiny-encoder.int8.onnx": "d24fb083ae3b1041fc24e97971d60e280c9342201fbb67b0ab428a8b4a51a434",
+      "tiny-decoder.int8.onnx": "d2fece8dd42771f1df975c6c0445770d0c292bf7547c2cae04a6c0cc57540925",
+      "tiny-tokens.txt": "b34b360dbb493e781e479794586d661700670d65564001f23024971d1f2fa126"
+    },
+    "downloadUrl": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-tiny/resolve/main",
+    "files": [
+      "tiny-encoder.int8.onnx",
+      "tiny-decoder.int8.onnx",
+      "tiny-tokens.txt"
+    ],
+    "sizeBytes": 103609903
   },
   "ttsModel": {
-    "modelId": "vits-mms-mar",
+    "modelId": "mms-tts-mr",
     "format": "onnx",
     "quantization": "fp32",
-    "checksumsSha256": {},
-    "downloadUrl": "https://huggingface.co/csukuangfj/vits-mms-mar/resolve/main",
-    "files": ["vits-mms-mar.onnx", "lexicon.txt", "tokens.txt"],
-    "sizeBytes": 35000000
+    "checksumsSha256": {
+      "model.onnx": "046cecf7cca77680c9ca319953e777c8d0233ce78e9b55a47aa909edf87d99e8",
+      "tokens.txt": "4d968029d0754b41633cb0871cce6796a5ab3d3bc2b9b91c5721cfdf85156083"
+    },
+    "downloadUrl": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx/resolve/main/mar",
+    "files": [
+      "model.onnx",
+      "tokens.txt"
+    ],
+    "sizeBytes": 114044398
   },
   "minimumRamBytes": 536870912
 }

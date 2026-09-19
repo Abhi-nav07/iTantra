@@ -1,0 +1,146 @@
+[
+  {
+    "id": "EN-001",
+    "category": "GREETINGS",
+    "referenceText": "Hello, how are you today?",
+    "isCritical": false
+  },
+  {
+    "id": "EN-002",
+    "category": "GREETINGS",
+    "referenceText": "Good morning, have a great day.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-003",
+    "category": "GREETINGS",
+    "referenceText": "Pleased to meet you.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-004",
+    "category": "SIMPLE_SPEECH",
+    "referenceText": "My name is Rahul and I am a volunteer.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-005",
+    "category": "NUMBERS",
+    "referenceText": "More than one hundred people are stranded here.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-006",
+    "category": "NUMBERS",
+    "referenceText": "My contact number is eight nine two.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-007",
+    "category": "NUMBERS",
+    "referenceText": "We require fifty packets of ration and water.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-008",
+    "category": "LOCATION",
+    "referenceText": "The hospital is five kilometers away from here.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-009",
+    "category": "LOCATION",
+    "referenceText": "Water current is very strong ahead of the bridge.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-010",
+    "category": "LOCATION",
+    "referenceText": "We are proceeding towards the north direction.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-011",
+    "category": "EMERGENCY",
+    "referenceText": "Please dispatch the rescue team immediately.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-012",
+    "category": "EMERGENCY",
+    "referenceText": "Flood water has entered the low-lying village.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-013",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "All telephone lines are down, maintain radio contact.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-014",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "Escort the medical team to the relief camp safely.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-015",
+    "category": "CONVERSATION",
+    "referenceText": "Do you have extra spare batteries available?",
+    "isCritical": false
+  },
+  {
+    "id": "EN-016",
+    "category": "CONVERSATION",
+    "referenceText": "Local authorities have advised everyone to remain alert.",
+    "isCritical": false
+  },
+  {
+    "id": "EN-CRIT-017",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "Evacuate immediately",
+    "isCritical": true
+  },
+  {
+    "id": "EN-CRIT-018",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "Do not evacuate",
+    "isCritical": true
+  },
+  {
+    "id": "EN-CRIT-019",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "Road is open",
+    "isCritical": true
+  },
+  {
+    "id": "EN-CRIT-020",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "Road is blocked",
+    "isCritical": true
+  },
+  {
+    "id": "EN-CRIT-021",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "Patient is conscious",
+    "isCritical": true
+  },
+  {
+    "id": "EN-CRIT-022",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "Patient is unconscious",
+    "isCritical": true
+  },
+  {
+    "id": "EN-CRIT-023",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "Fire is controlled",
+    "isCritical": true
+  },
+  {
+    "id": "EN-CRIT-024",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "Fire is not controlled",
+    "isCritical": true
+  }
+]

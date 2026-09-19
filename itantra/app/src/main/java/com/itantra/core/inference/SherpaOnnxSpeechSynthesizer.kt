@@ -118,9 +118,9 @@ class SherpaOnnxSpeechSynthesizer(
             0f
         }
 
-        // Track time to first audio. Here we use batch mode so TTFA = SynthesisTime
+        // TTFA proxy = full batch generation latency (current batch VITS synthesis produces complete waveform before playback)
         metricsRecorder.recordTtsTimeToFirstAudio(synthesisTimeMs)
-        metricsRecorder.recordTtsSynthesisDuration(audioDurationMs)
+        metricsRecorder.recordTtsSynthesisDuration(synthesisTimeMs)
         metricsRecorder.recordTtsRealTimeFactor(rtf.toDouble())
 
         SpeechSynthesisResult(

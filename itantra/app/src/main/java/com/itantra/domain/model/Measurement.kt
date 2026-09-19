@@ -20,6 +20,13 @@ sealed class Measurement<out T> {
             NotMeasured -> "N/A"
         }
 
+    /** Strict benchmark screen rendering: unmeasured values render NOT_MEASURED, never 0. */
+    fun displayBenchmark(unit: String = "", format: (T) -> String = { it.toString() }): String =
+        when (this) {
+            is Measured -> "${format(value)}$unit"
+            NotMeasured -> "NOT_MEASURED"
+        }
+
     companion object {
         fun <T> of(value: T?): Measurement<T> =
             if (value == null) NotMeasured else Measured(value)

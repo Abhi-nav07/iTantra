@@ -12,9 +12,18 @@ class CTranslate2TranslationEngine : TranslationEngine {
 
     private var indicEnHandle: Long = 0
     private var enIndicHandle: Long = 0
-    
-    override var isLoaded: Boolean = false
-        private set
+
+    var indicEnReady: Boolean = false
+        internal set
+    var enIndicReady: Boolean = false
+        internal set
+
+    /**
+     * isLoaded requires BOTH translation directions (indic-en and en-indic) to be loaded.
+     * Do not treat partial single-direction loading as complete engine readiness.
+     */
+    override val isLoaded: Boolean
+        get() = indicEnReady && enIndicReady
 
     override val supportedSourceLanguages: Set<LanguageCode> = setOf(
         LanguageCode.HINDI, LanguageCode.ENGLISH, LanguageCode.BENGALI,
@@ -24,24 +33,58 @@ class CTranslate2TranslationEngine : TranslationEngine {
 
     override val supportedTargetLanguages: Set<LanguageCode> = supportedSourceLanguages
 
+    private fun isDirectionFilesValid(dir: File): Boolean {
+        if (!dir.exists() || !dir.isDirectory) return false
+        val requiredFiles = listOf(
+            "model.bin",
+            "config.json",
+            "source_vocabulary.json",
+            "target_vocabulary.json"
+        )
+        val baseFilesOk = requiredFiles.all {
+            val f = File(dir, it)
+            f.exists() && f.length() > 0L
+        }
+        if (!baseFilesOk) return false
+
+        val vocabDir = File(dir, "vocab")
+        val srcInVocab = File(vocabDir, "model.SRC")
+        val tgtInVocab = File(vocabDir, "model.TGT")
+        val srcInRoot = File(dir, "model.SRC")
+        val tgtInRoot = File(dir, "model.TGT")
+
+        val srcOk = (srcInVocab.exists() && srcInVocab.length() > 0L) || (srcInRoot.exists() && srcInRoot.length() > 0L)
+        val tgtOk = (tgtInVocab.exists() && tgtInVocab.length() > 0L) || (tgtInRoot.exists() && tgtInRoot.length() > 0L)
+
+        return srcOk && tgtOk
+    }
+
     override fun init(modelsDir: File) {
-        if (isLoaded) return
         try {
-            val indicEnPath = File(modelsDir, "indic-en").absolutePath
-            val enIndicPath = File(modelsDir, "en-indic").absolutePath
-            
-            if (File(indicEnPath).exists()) {
-                indicEnHandle = nativeCreateEngine(indicEnPath)
+            val indicEnDir = File(modelsDir, "indic-en")
+            val enIndicDir = File(modelsDir, "en-indic")
+
+            if (indicEnHandle == 0L && isDirectionFilesValid(indicEnDir)) {
+                try {
+                    indicEnHandle = nativeCreateEngine(indicEnDir.absolutePath)
+                    if (indicEnHandle != 0L) indicEnReady = true
+                } catch (e: Throwable) {
+                    logError("CTranslate2", "Failed to create indic-en engine", e)
+                    indicEnReady = false
+                }
             }
-            if (File(enIndicPath).exists()) {
-                enIndicHandle = nativeCreateEngine(enIndicPath)
+
+            if (enIndicHandle == 0L && isDirectionFilesValid(enIndicDir)) {
+                try {
+                    enIndicHandle = nativeCreateEngine(enIndicDir.absolutePath)
+                    if (enIndicHandle != 0L) enIndicReady = true
+                } catch (e: Throwable) {
+                    logError("CTranslate2", "Failed to create en-indic engine", e)
+                    enIndicReady = false
+                }
             }
-            
-            if (indicEnHandle != 0L || enIndicHandle != 0L) {
-                isLoaded = true
-            }
-        } catch (e: Exception) {
-            Log.e("CTranslate2", "Failed to init MT models", e)
+        } catch (e: Throwable) {
+            logError("CTranslate2", "Failed to init MT models", e)
         }
     }
 
@@ -50,19 +93,28 @@ class CTranslate2TranslationEngine : TranslationEngine {
         sourceLang: LanguageCode,
         targetLang: LanguageCode
     ): TranslationResult {
-        if (!isLoaded) {
-            return TranslationResult(text, "", false, sourceLang, targetLang, error = "ENGINE_NOT_LOADED")
+        // Same-language bypasses MT entirely
+        if (sourceLang == targetLang) {
+            return TranslationResult(text, text, true, sourceLang, targetLang)
         }
 
         return try {
             if (sourceLang == LanguageCode.ENGLISH) {
+                // English -> Indic requires enIndicReady
+                if (!enIndicReady) return TranslationResult(text, "", false, sourceLang, targetLang, error = "ENGINE_NOT_LOADED")
                 val translated = translateEnToIndic(text, targetLang)
                 checkResult(translated, text, sourceLang, targetLang)
             } else if (targetLang == LanguageCode.ENGLISH) {
+                // Indic -> English requires indicEnReady
+                if (!indicEnReady) return TranslationResult(text, "", false, sourceLang, targetLang, error = "ENGINE_NOT_LOADED")
                 val translated = translateIndicToEn(text, sourceLang)
                 checkResult(translated, text, sourceLang, targetLang)
             } else {
-                // Indic -> Indic Pivot
+                // Indic -> Indic requires BOTH directions
+                if (!indicEnReady || !enIndicReady) {
+                    return TranslationResult(text, "", false, sourceLang, targetLang, error = "ENGINE_NOT_LOADED")
+                }
+
                 val pivotEnglish = translateIndicToEn(text, sourceLang)
                 if (pivotEnglish.isNullOrBlank()) {
                     TranslationResult(text, "", false, sourceLang, targetLang, error = "PIVOT_EN_FAILED")
@@ -76,7 +128,7 @@ class CTranslate2TranslationEngine : TranslationEngine {
             TranslationResult(text, "", false, sourceLang, targetLang, error = "INFERENCE_FAILED")
         }
     }
-    
+
     private fun checkResult(translated: String?, text: String, source: LanguageCode, target: LanguageCode): TranslationResult {
         return if (!translated.isNullOrBlank()) {
             TranslationResult(text, translated, true, source, target)
@@ -101,16 +153,16 @@ class CTranslate2TranslationEngine : TranslationEngine {
 
     private fun getTag(lang: LanguageCode): String {
         return when (lang) {
-            LanguageCode.HINDI -> "__hin_Deva__"
-            LanguageCode.ENGLISH -> "__eng_Latn__"
-            LanguageCode.BENGALI -> "__ben_Beng__"
-            LanguageCode.GUJARATI -> "__guj_Gujr__"
-            LanguageCode.MARATHI -> "__mar_Deva__"
-            LanguageCode.KANNADA -> "__kan_Knda__"
-            LanguageCode.MALAYALAM -> "__mal_Mlym__"
-            LanguageCode.TAMIL -> "__tam_Taml__"
-            LanguageCode.TELUGU -> "__tel_Telu__"
-            LanguageCode.ODIA -> "__ory_Orya__"
+            LanguageCode.HINDI -> "hin_Deva"
+            LanguageCode.ENGLISH -> "eng_Latn"
+            LanguageCode.BENGALI -> "ben_Beng"
+            LanguageCode.GUJARATI -> "guj_Gujr"
+            LanguageCode.MARATHI -> "mar_Deva"
+            LanguageCode.KANNADA -> "kan_Knda"
+            LanguageCode.MALAYALAM -> "mal_Mlym"
+            LanguageCode.TAMIL -> "tam_Taml"
+            LanguageCode.TELUGU -> "tel_Telu"
+            LanguageCode.ODIA -> "ory_Orya"
         }
     }
 
@@ -123,19 +175,31 @@ class CTranslate2TranslationEngine : TranslationEngine {
             nativeDestroyEngine(enIndicHandle)
             enIndicHandle = 0L
         }
-        isLoaded = false
+        indicEnReady = false
+        enIndicReady = false
     }
 
     private external fun nativeCreateEngine(modelPath: String): Long
     private external fun nativeTranslate(handle: Long, text: String, sourceTag: String, targetTag: String): String
     private external fun nativeDestroyEngine(handle: Long)
 
+    // For Golden Vector testing
+    external fun nativePrepareInputForTest(handle: Long, text: String, sourceTag: String, targetTag: String): Array<String>
+
     companion object {
         init {
             try {
                 System.loadLibrary("itantra_mt_jni")
-            } catch (e: UnsatisfiedLinkError) {
-                Log.e("CTranslate2", "Could not load libitantra_mt_jni.so", e)
+            } catch (e: Throwable) {
+                logError("CTranslate2", "Could not load libitantra_mt_jni.so", e)
+            }
+        }
+
+        private fun logError(tag: String, msg: String, tr: Throwable? = null) {
+            try {
+                android.util.Log.e(tag, msg, tr)
+            } catch (_: Throwable) {
+                System.err.println("[$tag] $msg: ${tr?.message ?: ""}")
             }
         }
     }

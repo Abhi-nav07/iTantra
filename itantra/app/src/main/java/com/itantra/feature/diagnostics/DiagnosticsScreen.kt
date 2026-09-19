@@ -23,6 +23,8 @@ fun DiagnosticsScreen(
     viewModel: DiagnosticsViewModel,
     onBack: () -> Unit,
     onLaunchBenchmark: () -> Unit,
+    onLaunchTtsEvaluation: () -> Unit = {},
+    onLaunchPerformanceBenchmark: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -175,11 +177,29 @@ fun DiagnosticsScreen(
             Button(
                 onClick = onLaunchBenchmark,
                 modifier = Modifier
+                    .fillMaxWidth(),
+                shape = ITantraShapes.button,
+            ) {
+                Text("RUN STT BENCHMARK", fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(Spacing.sm))
+            OutlinedButton(
+                onClick = onLaunchTtsEvaluation,
+                modifier = Modifier
+                    .fillMaxWidth(),
+                shape = ITantraShapes.button,
+            ) {
+                Text("TTS HUMAN INTELLIGIBILITY EVALUATION", fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(Spacing.sm))
+            OutlinedButton(
+                onClick = onLaunchPerformanceBenchmark,
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = Spacing.xxl),
                 shape = ITantraShapes.button,
             ) {
-                Text("RUN HINDI WER BENCHMARK", fontWeight = FontWeight.Bold)
+                Text("PERFORMANCE & EFFICIENCY BENCHMARK", fontWeight = FontWeight.Bold)
             }
         }
         }

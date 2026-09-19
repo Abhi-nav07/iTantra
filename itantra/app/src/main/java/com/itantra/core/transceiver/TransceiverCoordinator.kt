@@ -78,9 +78,19 @@ class TransceiverCoordinator(
     private var continuousModeJob: Job? = null
     private var isTtsPlaying = false
 
+    val emergencyStore = com.itantra.core.emergency.EmergencyPersistenceStore(context.filesDir)
+    private val _activeEmergencyAlert = MutableStateFlow<com.itantra.domain.model.EmergencyRecord?>(null)
+    val activeEmergencyAlert: StateFlow<com.itantra.domain.model.EmergencyRecord?> = _activeEmergencyAlert.asStateFlow()
+
     private val currentTargetLanguage = MutableStateFlow<LanguageCode?>(null)
 
     init {
+        // Reload unresolved emergency state from durable persistence on initialization/restart
+        val unresolved = emergencyStore.getUnresolvedRecords()
+        if (unresolved.isNotEmpty()) {
+            _activeEmergencyAlert.value = unresolved.lastOrNull()
+        }
+
         scope.launch {
             transportEngine.observeConnectionState().collect { state ->
                 val connected = state == ConnectionState.CONNECTED
@@ -92,7 +102,10 @@ class TransceiverCoordinator(
                     if (isInitiator) {
                         transportEngine.send(hello)
                     }
-                    sendCapabilities()
+                    // Retry unresolved critical emergency messages after reconnect
+                    scope.launch {
+                        retryUnresolvedEmergencies()
+                    }
                 } else if (!connected && isConnected) {
                     isConnected = false
                     _peerCapabilities.value = PeerCapabilities()
@@ -103,7 +116,7 @@ class TransceiverCoordinator(
 
         scope.launch {
             sessionManager.activeLanguage.collect { lang ->
-                if (isConnected && lang != null) {
+                if (isConnected && lang != null && secureSessionManager.state.value == SecureSessionState.SECURE_VERIFIED) {
                     sendCapabilities()
                 }
             }
@@ -200,6 +213,8 @@ class TransceiverCoordinator(
     }
 
     private suspend fun sendCapabilities() {
+        if (secureSessionManager.state.value != SecureSessionState.SECURE_VERIFIED) return
+
         val sttLangs = listOfNotNull(sessionManager.activeLanguage.value)
         val ttsLangs = listOfNotNull(sessionManager.activeLanguage.value)
 
@@ -216,7 +231,12 @@ class TransceiverCoordinator(
             messageId = SystemClock.elapsedRealtime(),
             payload = payload
         )
-        transportEngine.send(packet)
+        try {
+            val securePacket = secureSessionManager.encrypt(packet)
+            transportEngine.send(securePacket)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun handleIncomingPacket(packet: ItantraPacket) {
@@ -230,12 +250,15 @@ class TransceiverCoordinator(
 
         if (packet.type == PacketType.SECURE_VERIFY) {
             secureSessionManager.processSecureVerify(packet)
+            if (secureSessionManager.state.value == SecureSessionState.SECURE_VERIFIED) {
+                scope.launch { sendCapabilities() }
+            }
             return
         }
 
         // Only process application traffic if session is secure
         if (secureSessionManager.state.value != SecureSessionState.SECURE_VERIFIED) {
-            // Drop packet or ignore
+            // Drop packet before both parties confirm SAS
             return
         }
 
@@ -249,6 +272,10 @@ class TransceiverCoordinator(
         when (decryptedPacket.type) {
             PacketType.ACK -> {
                 transportEngine.notifyAckReceived(decryptedPacket.messageId)
+                updateMessage(decryptedPacket.messageId) {
+                    it.copy(state = MessageState.DELIVERED)
+                }
+                emergencyStore.recordTransportAck(decryptedPacket.messageId)
             }
             PacketType.CAPABILITIES -> {
                 if (decryptedPacket.payload.size >= 4) {
@@ -290,6 +317,11 @@ class TransceiverCoordinator(
                 updateMessage(decryptedPacket.messageId) {
                     it.copy(state = MessageState.ACKNOWLEDGED)
                 }
+                emergencyStore.recordHumanAck(decryptedPacket.messageId)
+                if (_activeEmergencyAlert.value?.messageId == decryptedPacket.messageId) {
+                    _activeEmergencyAlert.value = null
+                    com.itantra.core.service.OperationalForegroundService.resolveEmergency(context)
+                }
             }
             PacketType.TTS_STARTED -> {
                 updateMessage(decryptedPacket.messageId) {
@@ -303,10 +335,12 @@ class TransceiverCoordinator(
                     ttfa = ByteBuffer.wrap(decryptedPacket.payload).order(ByteOrder.BIG_ENDIAN).long
                 }
                 updateMessage(decryptedPacket.messageId) {
+                    val fullEstimatedE2e = it.sttLatencyMillis + it.mtLatencyMillis + it.cryptoLatencyMillis + (it.rttMillis / 2) + ttfa
+                    metricsRecorder.recordEndToEndLatency(fullEstimatedE2e)
                     it.copy(
                         state = MessageState.REMOTE_PLAYBACK_CONFIRMED,
                         peerTtfaMillis = ttfa,
-                        estimatedE2eMillis = it.sttLatencyMillis + (it.rttMillis / 2) + ttfa
+                        estimatedE2eMillis = fullEstimatedE2e
                     )
                 }
             }
@@ -321,14 +355,15 @@ class TransceiverCoordinator(
 
     private suspend fun processIncomingMessagePacket(packet: ItantraPacket) {
         val isEmergencyCode = packet.type == PacketType.EMERGENCY_CODE
+        val localLanguage = sessionManager.activeLanguage.value ?: LanguageCode.ENGLISH
         var text = if (isEmergencyCode && packet.payload.isNotEmpty()) {
             val code = com.itantra.domain.model.EmergencyCode.fromId(packet.payload[0])
-            if (code != null) com.itantra.domain.model.EmergencyPhraseResolver.resolve(code, packet.languageCode) else "Unknown Emergency"
+            // Emergency code bypasses MT and resolves directly into receiver's active local language (Section N)
+            if (code != null) com.itantra.domain.model.EmergencyPhraseResolver.resolve(code, localLanguage) else "Unknown Emergency"
         } else {
             String(packet.payload, Charsets.UTF_8)
         }
 
-        val localLanguage = sessionManager.activeLanguage.value ?: LanguageCode.ENGLISH
         val pktLang = packet.targetLanguage ?: packet.languageCode ?: localLanguage
 
         if (!isEmergencyCode && pktLang != localLanguage) {
@@ -351,6 +386,27 @@ class TransceiverCoordinator(
 
         val ackPkt = secureSessionManager.encrypt(ItantraPacket(PacketType.ACK, messageId = packet.messageId))
         scope.launch { transportEngine.send(ackPkt) }
+
+        if (isEmergencyCode) {
+            val code = if (packet.payload.isNotEmpty()) com.itantra.domain.model.EmergencyCode.fromId(packet.payload[0]) else null
+            val emergencyRec = com.itantra.domain.model.EmergencyRecord(
+                messageId = packet.messageId,
+                emergencyCode = code?.name ?: "UNKNOWN",
+                source = "REMOTE",
+                target = "LOCAL",
+                createdAt = System.currentTimeMillis(),
+                retryStatus = com.itantra.domain.model.EmergencyRetryStatus.PENDING,
+                humanAckStatus = false,
+                resolvedPhrase = text
+            )
+            emergencyStore.saveRecord(emergencyRec)
+            _activeEmergencyAlert.value = emergencyRec
+            com.itantra.core.service.OperationalForegroundService.triggerEmergency(context, text)
+        } else if (_activeEmergencyAlert.value != null) {
+            // Application-level non-interruptible: normal message is delivered to history,
+            // but does NOT preempt active emergency audio alert or clear alert state
+            return
+        }
 
         val engine = sessionManager.currentTtsEngine
         if (engine == null || !engine.isLoaded) {
@@ -379,14 +435,15 @@ class TransceiverCoordinator(
             val result = engine.synthesize(req)
             val ttfaMillis = (SystemClock.elapsedRealtimeNanos() - t0) / 1_000_000
 
-            val sink = SpeakerAudioSink()
+            val sink = SpeakerAudioSink(context)
             currentAudioSink = sink
-            val usage = if (packet.flags.toInt() == com.itantra.domain.model.MessagePriority.CRITICAL) {
+            val isCritical = packet.flags.toInt() == com.itantra.domain.model.MessagePriority.CRITICAL || isEmergencyCode
+            val usage = if (isCritical) {
                 android.media.AudioAttributes.USAGE_ALARM
             } else {
                 android.media.AudioAttributes.USAGE_VOICE_COMMUNICATION
             }
-            sink.init(result.sampleRateHz, usage)
+            sink.init(result.sampleRateHz, usage, requestMaxVolume = isCritical)
             sink.play(result.pcmAudio)
             sink.flushAndStop()
 
@@ -422,6 +479,7 @@ class TransceiverCoordinator(
     fun setContinuousMode(enabled: Boolean) {
         if (enabled) {
             if (continuousModeJob != null) return
+            com.itantra.core.service.OperationalForegroundService.startContinuous(context)
             continuousListenEngine.start()
             continuousModeJob = scope.launch {
                 launch {
@@ -445,6 +503,7 @@ class TransceiverCoordinator(
                 }
             }
         } else {
+            com.itantra.core.service.OperationalForegroundService.stopContinuous(context)
             continuousModeJob?.cancel()
             continuousModeJob = null
             continuousListenEngine.stop()
@@ -498,6 +557,7 @@ class TransceiverCoordinator(
                     val durationMillis = (audio.size.toLong() * 1000) / 16000
 
                     metricsRecorder.recordSttInferenceTime(latencyMillis)
+                    metricsRecorder.recordSttEndpointToFinalText(latencyMillis)
                     metricsRecorder.recordSttAudioDuration(durationMillis)
 
                     if (result.text.isBlank()) {
@@ -658,6 +718,7 @@ class TransceiverCoordinator(
                     val latencyMillis = (SystemClock.elapsedRealtimeNanos() - t0) / 1_000_000
 
                     metricsRecorder.recordSttInferenceTime(latencyMillis)
+                    metricsRecorder.recordSttEndpointToFinalText(latencyMillis)
                     metricsRecorder.recordSttAudioDuration(durationMillis)
 
                     if (result.text.isBlank()) {
@@ -679,12 +740,16 @@ class TransceiverCoordinator(
                     var origTxt: String? = null
                     var translationStatus = com.itantra.domain.model.TranslationStatus.BYPASSED
 
+                    var mtLatency = 0L
                     if (targetLang != null && targetLang != srcLang) {
                         translationStatus = com.itantra.domain.model.TranslationStatus.TRANSLATING
                         updateMessage(msgId) {
                             it.copy(state = MessageState.STT_PROCESSING, text = "Translating...", translationStatus = translationStatus)
                         }
+                        val tMt0 = SystemClock.elapsedRealtimeNanos()
                         val translationRes = translationRouter.routeAndTranslate(result.text, srcLang, targetLang)
+                        mtLatency = (SystemClock.elapsedRealtimeNanos() - tMt0) / 1_000_000
+
                         if (translationRes.isSuccessful && translationRes.translatedText.isNotBlank()) {
                             finalTxt = translationRes.translatedText
                             origTxt = result.text
@@ -697,7 +762,8 @@ class TransceiverCoordinator(
                                     state = MessageState.ERROR,
                                     text = "Translation failed: ${translationRes.error ?: "Unknown"}",
                                     originalText = result.text,
-                                    translationStatus = translationStatus
+                                    translationStatus = translationStatus,
+                                    mtLatencyMillis = mtLatency
                                 )
                             }
                             return@withLock
@@ -714,6 +780,7 @@ class TransceiverCoordinator(
                             originalText = origTxt,
                             translationStatus = translationStatus,
                             sttLatencyMillis = latencyMillis,
+                            mtLatencyMillis = mtLatency,
                             payloadBytes = payload.size,
                             rawPcmEquivalentBytes = rawPcmEq.toInt(),
                             speechDurationMillis = durationMillis
@@ -776,30 +843,57 @@ class TransceiverCoordinator(
             while (attempt < maxAttempts && !success) {
                 attempt++
                 try {
+                    val tCrypto0 = SystemClock.elapsedRealtimeNanos()
                     val securePacket = secureSessionManager.encrypt(packet) // Encrypt inside loop to get a fresh nonce/counter each time
+                    val cryptoLatency = (SystemClock.elapsedRealtimeNanos() - tCrypto0) / 1_000_000
+
+                    metricsRecorder.recordCryptoMetrics(
+                        com.itantra.domain.model.CryptoMetrics(
+                            handshakeDurationMillis = com.itantra.domain.model.Measurement.Measured(secureSessionManager.lastHandshakeDurationMillis),
+                            verificationDurationMillis = com.itantra.domain.model.Measurement.Measured(secureSessionManager.lastVerificationDurationMillis),
+                            avgEncryptUs = com.itantra.domain.model.Measurement.Measured(secureSessionManager.encryptDurationUs),
+                            avgDecryptUs = com.itantra.domain.model.Measurement.Measured(secureSessionManager.decryptDurationUs),
+                            authFailures = secureSessionManager.authFailures,
+                            replayRejections = secureSessionManager.replayRejections
+                        )
+                    )
+
                     val txMetrics = transportEngine.send(securePacket)
                     val rtt = txMetrics.transmissionLatencyMillis.let { if (it is com.itantra.domain.model.Measurement.Measured) it.value else 0L }
                     val pBytes = txMetrics.packetBytes.let { if (it is com.itantra.domain.model.Measurement.Measured) it.value else 0 }
                     val semBytes = packet.payload.size
-                    val secBytes = txMetrics.secureBytes.let { if (it is com.itantra.domain.model.Measurement.Measured) it.value else 0 }
+                    val secBytes = securePacket.payload.size
                     val frameBytes = txMetrics.finalFrameBytes.let { if (it is com.itantra.domain.model.Measurement.Measured) it.value else 0 }
 
                     if (rtt > 0 || sendPriority != com.itantra.domain.model.MessagePriority.CRITICAL) {
                         success = true
+                        val estE2e = msg.sttLatencyMillis + msg.mtLatencyMillis + cryptoLatency + (rtt / 2)
                         if (rtt > 0) {
                             updateMessage(msgId) {
                                 it.copy(
                                     state = MessageState.DELIVERED,
+                                    cryptoLatencyMillis = cryptoLatency,
                                     packetBytes = pBytes,
                                     semanticBytes = semBytes,
                                     secureBytes = secBytes,
                                     finalFrameBytes = frameBytes,
                                     rttMillis = rtt,
-                                    estimatedE2eMillis = it.sttLatencyMillis + (rtt / 2)
+                                    estimatedE2eMillis = estE2e
                                 )
                             }
+                            metricsRecorder.recordEndToEndLatency(estE2e)
                         } else {
-                            updateMessage(msgId) { it.copy(state = MessageState.SENT, packetBytes = pBytes, semanticBytes = semBytes, secureBytes = secBytes, finalFrameBytes = frameBytes) }
+                            updateMessage(msgId) {
+                                it.copy(
+                                    state = MessageState.SENT,
+                                    cryptoLatencyMillis = cryptoLatency,
+                                    packetBytes = pBytes,
+                                    semanticBytes = semBytes,
+                                    secureBytes = secBytes,
+                                    finalFrameBytes = frameBytes,
+                                    estimatedE2eMillis = estE2e
+                                )
+                            }
                         }
                         metricsRecorder.recordTransmission(txMetrics)
                     } else {
@@ -826,7 +920,9 @@ class TransceiverCoordinator(
         scope.launch {
             val verifyPacket = secureSessionManager.confirmSasMatch()
             transportEngine.send(verifyPacket)
-            secureSessionManager.processSecureVerify(verifyPacket) // apply locally
+            if (secureSessionManager.state.value == SecureSessionState.SECURE_VERIFIED) {
+                sendCapabilities()
+            }
         }
     }
 
@@ -845,6 +941,18 @@ class TransceiverCoordinator(
             )
             addMessage(msg)
 
+            val record = com.itantra.domain.model.EmergencyRecord(
+                messageId = msgId,
+                emergencyCode = code.name,
+                source = "LOCAL",
+                target = "BROADCAST",
+                createdAt = System.currentTimeMillis(),
+                retryStatus = com.itantra.domain.model.EmergencyRetryStatus.PENDING,
+                retryCount = 0,
+                resolvedPhrase = text
+            )
+            emergencyStore.saveRecord(record)
+
             val packet = ItantraPacket(
                 type = PacketType.EMERGENCY_CODE,
                 flags = com.itantra.domain.model.MessagePriority.CRITICAL.toByte(),
@@ -862,33 +970,54 @@ class TransceiverCoordinator(
             while (attempt < 3 && !success) {
                 attempt++
                 try {
+                    val tCrypto0 = SystemClock.elapsedRealtimeNanos()
                     val securePacket = secureSessionManager.encrypt(packet)
+                    val cryptoLatency = (SystemClock.elapsedRealtimeNanos() - tCrypto0) / 1_000_000
+
+                    metricsRecorder.recordCryptoMetrics(
+                        com.itantra.domain.model.CryptoMetrics(
+                            handshakeDurationMillis = com.itantra.domain.model.Measurement.Measured(secureSessionManager.lastHandshakeDurationMillis),
+                            verificationDurationMillis = com.itantra.domain.model.Measurement.Measured(secureSessionManager.lastVerificationDurationMillis),
+                            avgEncryptUs = com.itantra.domain.model.Measurement.Measured(secureSessionManager.encryptDurationUs),
+                            avgDecryptUs = com.itantra.domain.model.Measurement.Measured(secureSessionManager.decryptDurationUs),
+                            authFailures = secureSessionManager.authFailures,
+                            replayRejections = secureSessionManager.replayRejections
+                        )
+                    )
+
                     val txMetrics = transportEngine.send(securePacket)
                     val rtt = txMetrics.transmissionLatencyMillis.let { if (it is com.itantra.domain.model.Measurement.Measured) it.value else 0L }
                     val pBytes = txMetrics.packetBytes.let { if (it is com.itantra.domain.model.Measurement.Measured) it.value else 0 }
                     val semBytes = packet.payload.size
-                    val secBytes = txMetrics.secureBytes.let { if (it is com.itantra.domain.model.Measurement.Measured) it.value else 0 }
+                    val secBytes = securePacket.payload.size
                     val frameBytes = txMetrics.finalFrameBytes.let { if (it is com.itantra.domain.model.Measurement.Measured) it.value else 0 }
 
                     if (rtt > 0) {
                         success = true
+                        emergencyStore.recordTransportAck(msgId)
+                        val estE2e = cryptoLatency + (rtt / 2)
                         updateMessage(msgId) {
                             it.copy(
                                 state = MessageState.DELIVERED,
+                                cryptoLatencyMillis = cryptoLatency,
                                 packetBytes = pBytes,
                                 semanticBytes = semBytes,
                                 secureBytes = secBytes,
                                 finalFrameBytes = frameBytes,
                                 rttMillis = rtt,
-                                estimatedE2eMillis = rtt / 2
+                                estimatedE2eMillis = estE2e
                             )
                         }
+                        metricsRecorder.recordEndToEndLatency(estE2e)
+                        metricsRecorder.recordTransmission(txMetrics)
                     } else {
+                        emergencyStore.recordRetryAttempt(msgId, false, System.currentTimeMillis())
                         if (attempt < 3) delay(1000)
                         else updateMessage(msgId) { it.copy(state = MessageState.ERROR, text = "Failed to deliver SOS") }
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
+                    emergencyStore.recordRetryAttempt(msgId, false, System.currentTimeMillis())
                     if (attempt == 3) {
                         updateMessage(msgId) { it.copy(state = MessageState.ERROR, text = "Failed to send SOS") }
                     } else {
@@ -902,6 +1031,11 @@ class TransceiverCoordinator(
     fun sendHumanAck(msgId: Long) {
         scope.launch {
             updateMessage(msgId) { it.copy(state = MessageState.ACKNOWLEDGED) }
+            emergencyStore.recordHumanAck(msgId)
+            if (_activeEmergencyAlert.value?.messageId == msgId) {
+                _activeEmergencyAlert.value = null
+                com.itantra.core.service.OperationalForegroundService.resolveEmergency(context)
+            }
             val packet = ItantraPacket(
                 type = PacketType.HUMAN_ACK,
                 messageId = msgId,
@@ -912,6 +1046,31 @@ class TransceiverCoordinator(
                 transportEngine.send(securePacket)
             } catch (e: Exception) {
                 e.printStackTrace()
+            }
+        }
+    }
+
+    private suspend fun retryUnresolvedEmergencies() {
+        val unresolved = emergencyStore.getUnresolvedRecords().filter { it.canRetry && it.source == "LOCAL" }
+        for (rec in unresolved) {
+            val code = com.itantra.domain.model.EmergencyCode.values().find { it.name == rec.emergencyCode } ?: continue
+            try {
+                val packet = ItantraPacket(
+                    type = PacketType.EMERGENCY_CODE,
+                    flags = com.itantra.domain.model.MessagePriority.CRITICAL.toByte(),
+                    messageId = rec.messageId,
+                    payload = byteArrayOf(code.id)
+                )
+                val securePacket = secureSessionManager.encrypt(packet)
+                val txMetrics = transportEngine.send(securePacket)
+                val rtt = txMetrics.transmissionLatencyMillis.let { if (it is com.itantra.domain.model.Measurement.Measured) it.value else 0L }
+                val ok = rtt > 0
+                emergencyStore.recordRetryAttempt(rec.messageId, ok, System.currentTimeMillis())
+                if (ok) {
+                    emergencyStore.recordTransportAck(rec.messageId)
+                }
+            } catch (e: Exception) {
+                emergencyStore.recordRetryAttempt(rec.messageId, false, System.currentTimeMillis())
             }
         }
     }

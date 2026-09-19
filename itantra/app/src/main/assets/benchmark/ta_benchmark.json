@@ -1,0 +1,146 @@
+[
+  {
+    "id": "TA-001",
+    "category": "GREETINGS",
+    "referenceText": "வணக்கம், நீங்கள் எப்படி இருக்கிறீர்கள்?",
+    "isCritical": false
+  },
+  {
+    "id": "TA-002",
+    "category": "GREETINGS",
+    "referenceText": "காலை வணக்கம், நல்ல நாளாக அமையட்டும்.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-003",
+    "category": "GREETINGS",
+    "referenceText": "உங்களை சந்தித்ததில் மிக்க மகிழ்ச்சி.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-004",
+    "category": "SIMPLE_SPEECH",
+    "referenceText": "என் பெயர் ராகுல், நான் ஒரு தன்னார்வலர்.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-005",
+    "category": "NUMBERS",
+    "referenceText": "இங்கு நூற்றுக்கும் மேற்பட்டோர் சிக்கியுள்ளனர்.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-006",
+    "category": "NUMBERS",
+    "referenceText": "என் தொலைபேசி எண் எட்டு ஒன்பது இரண்டு.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-007",
+    "category": "NUMBERS",
+    "referenceText": "ஐம்பது பாக்கெட் உணவு மற்றும் தண்ணீர் தேவைப்படுகிறது.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-008",
+    "category": "LOCATION",
+    "referenceText": "மருத்துவமனை இங்கிருந்து சுமார் ஐந்து கிலோமீட்டர் தொலைவில் உள்ளது.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-009",
+    "category": "LOCATION",
+    "referenceText": "பாலத்திற்கு முன்னால் வெள்ள நீர் மிக வேகமாக பாய்கிறது.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-010",
+    "category": "LOCATION",
+    "referenceText": "நாங்கள் வடக்கு திசையை நோக்கி செல்கிறோம்.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-011",
+    "category": "EMERGENCY",
+    "referenceText": "தயவுசெய்து உடனடியாக மீட்புக் குழுவை அனுப்பவும்.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-012",
+    "category": "EMERGENCY",
+    "referenceText": "வெள்ள நீர் கிராமத்திற்குள் புகுந்துள்ளது.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-013",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "தகவல்தொடர்பு துண்டிக்கப்பட்டுள்ளது, ரேடியோவை இயக்கத்தில் வைக்கவும்.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-014",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "மருத்துவக் குழுவை உடனடியாக நிவாரண முகாமுக்கு அழைத்து வாருங்கள்.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-015",
+    "category": "CONVERSATION",
+    "referenceText": "உங்களிடம் கூடுதல் பேட்டரிகள் உள்ளனவா?",
+    "isCritical": false
+  },
+  {
+    "id": "TA-016",
+    "category": "CONVERSATION",
+    "referenceText": "உள்ளூர் நிர்வாகம் பொதுமக்களை எச்சரிக்கையுடன் இருக்குமாறு கேட்டுக்கொண்டுள்ளது.",
+    "isCritical": false
+  },
+  {
+    "id": "TA-CRIT-017",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "உடனடியாக வெளியேறவும்",
+    "isCritical": true
+  },
+  {
+    "id": "TA-CRIT-018",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "வெளியேற வேண்டாம்",
+    "isCritical": true
+  },
+  {
+    "id": "TA-CRIT-019",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "சாலை திறக்கப்பட்டுள்ளது",
+    "isCritical": true
+  },
+  {
+    "id": "TA-CRIT-020",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "சாலை மூடப்பட்டுள்ளது",
+    "isCritical": true
+  },
+  {
+    "id": "TA-CRIT-021",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "நோயாளி சுயநினைவுடன் உள்ளார்",
+    "isCritical": true
+  },
+  {
+    "id": "TA-CRIT-022",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "நோயாளி சுயநினைவற்று உள்ளார்",
+    "isCritical": true
+  },
+  {
+    "id": "TA-CRIT-023",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "தீ கட்டுக்குள் உள்ளது",
+    "isCritical": true
+  },
+  {
+    "id": "TA-CRIT-024",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "தீ கட்டுக்குள் இல்லை",
+    "isCritical": true
+  }
+]

@@ -1,0 +1,146 @@
+[
+  {
+    "id": "ML-001",
+    "category": "GREETINGS",
+    "referenceText": "നമസ്കാരം, സുഖമാണോ?",
+    "isCritical": false
+  },
+  {
+    "id": "ML-002",
+    "category": "GREETINGS",
+    "referenceText": "സുപ്രഭാതം, നല്ലൊരു ദിവസം ആശംസിക്കുന്നു.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-003",
+    "category": "GREETINGS",
+    "referenceText": "നിങ്ങളെ കണ്ടതിൽ വളരെ സന്തോഷം.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-004",
+    "category": "SIMPLE_SPEECH",
+    "referenceText": "എന്റെ പേര് രാഹുൽ എന്നാണ്, ഞാൻ ഇവിടെ സന്നദ്ധപ്രവർത്തകനാണ്.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-005",
+    "category": "NUMBERS",
+    "referenceText": "ഇവിടെ നൂറിലധികം ആളുകൾ കുടുങ്ങിക്കിടക്കുന്നു.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-006",
+    "category": "NUMBERS",
+    "referenceText": "എന്റെ ഫോൺ നമ്പർ എട്ട് ഒമ്പത് രണ്ട് ആണ്.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-007",
+    "category": "NUMBERS",
+    "referenceText": "അമ്പത് പാക്കറ്റ് ഭക്ഷണവും വെള്ളവും ആവശ്യമുണ്ട്.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-008",
+    "category": "LOCATION",
+    "referenceText": "ആശുപത്രി ഇവിടെ നിന്ന് ഏകദേശം അഞ്ച് കിലോമീറ്റർ അകലെയാണ്.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-009",
+    "category": "LOCATION",
+    "referenceText": "പാലത്തിന് മുന്നിൽ ശക്തമായ ഒഴുക്കുണ്ട്.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-010",
+    "category": "LOCATION",
+    "referenceText": "ഞങ്ങൾ വടക്ക് ദിശയിലേക്ക് നീങ്ങുകയാണ്.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-011",
+    "category": "EMERGENCY",
+    "referenceText": "ദയവായി ഉടൻ രക്ഷാപ്രവർത്തകരെ അയക്കുക.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-012",
+    "category": "EMERGENCY",
+    "referenceText": "വെള്ളപ്പൊക്ക ജലം ഗ്രാമത്തിലേക്ക് പ്രവേശിച്ചു.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-013",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "ആശയവിനിമയ ബന്ധം തകരാറിലാണ്, റേഡിയോ ഓൺ ചെയ്തു വെക്കുക.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-014",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "മെഡിക്കൽ ടീമിനെ ഉടൻ സുരക്ഷിത ക്യാമ്പിലെത്തിക്കുക.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-015",
+    "category": "CONVERSATION",
+    "referenceText": "നിങ്ങളുടെ പക്കൽ അധിക ബാറ്ററികൾ ലഭ്യമാണോ?",
+    "isCritical": false
+  },
+  {
+    "id": "ML-016",
+    "category": "CONVERSATION",
+    "referenceText": "എല്ലാവരും ജാഗ്രത പാലിക്കണമെന്ന് പ്രാദേശിക ഭരണകൂടം അറിയിച്ചു.",
+    "isCritical": false
+  },
+  {
+    "id": "ML-CRIT-017",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ഉടൻ ഒഴിഞ്ഞുപോകുക",
+    "isCritical": true
+  },
+  {
+    "id": "ML-CRIT-018",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ഒഴിഞ്ഞുപോകരുത്",
+    "isCritical": true
+  },
+  {
+    "id": "ML-CRIT-019",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "റോഡ് തുറന്നിരിക്കുന്നു",
+    "isCritical": true
+  },
+  {
+    "id": "ML-CRIT-020",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "റോഡ് അടച്ചിരിക്കുന്നു",
+    "isCritical": true
+  },
+  {
+    "id": "ML-CRIT-021",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "രോഗിക്ക് ബോധമുണ്ട്",
+    "isCritical": true
+  },
+  {
+    "id": "ML-CRIT-022",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "രോഗിക്ക് ബോധമില്ല",
+    "isCritical": true
+  },
+  {
+    "id": "ML-CRIT-023",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "തീ നിയന്ത്രണവിധേയമാണ്",
+    "isCritical": true
+  },
+  {
+    "id": "ML-CRIT-024",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "തീ നിയന്ത്രണവിധേയമല്ല",
+    "isCritical": true
+  }
+]

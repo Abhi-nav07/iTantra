@@ -53,6 +53,8 @@ data class TransceiverMessage(
 
     // Metrics per message for E2E traceability
     val sttLatencyMillis: Long = 0,
+    val mtLatencyMillis: Long = 0,
+    val cryptoLatencyMillis: Long = 0,
     val payloadBytes: Int = 0,
     val semanticBytes: Int = 0,
     val secureBytes: Int = 0,

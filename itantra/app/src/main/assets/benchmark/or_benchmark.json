@@ -1,0 +1,146 @@
+[
+  {
+    "id": "OR-001",
+    "category": "GREETINGS",
+    "referenceText": "ନମସ୍କାର, ଆପଣ କେମିତି ଅଛନ୍ତି?",
+    "isCritical": false
+  },
+  {
+    "id": "OR-002",
+    "category": "GREETINGS",
+    "referenceText": "ଶୁଭ ସକାଳ, ଆପଣଙ୍କ ଦିନ ଭଲରେ କଟୁ।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-003",
+    "category": "GREETINGS",
+    "referenceText": "ଆପଣଙ୍କୁ ଭେଟି ବହୁତ ଖୁସି ଲାଗିଲା।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-004",
+    "category": "SIMPLE_SPEECH",
+    "referenceText": "ମୋ ନାମ ରାହୁଲ ଏବଂ ମୁଁ ଏଠାରେ ସ୍ୱେଚ୍ଛାସେବକ।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-005",
+    "category": "NUMBERS",
+    "referenceText": "ଏଠାରେ ଶହେରୁ ଅଧିକ ଲୋକ ଫସି ରହିଛନ୍ତି।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-006",
+    "category": "NUMBERS",
+    "referenceText": "ମୋ ଫୋନ ନମ୍ବର ଆଠ ନଅ ଦୁଇ।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-007",
+    "category": "NUMBERS",
+    "referenceText": "ପଚାଶ ପ୍ୟାକେଟ ରିଲିଫ ଏବଂ ପାଣି ଦରକାର।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-008",
+    "category": "LOCATION",
+    "referenceText": "ଡାକ୍ତରଖାନା ଏଠାରୁ ପ୍ରାୟ ପାଞ୍ଚ କିଲୋମିଟର ଦୂରରେ ଅଛି।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-009",
+    "category": "LOCATION",
+    "referenceText": "ପୋଲ ଆଗରେ ପାଣିର ସୁଅ ବହୁତ ତୀବ୍ର ଅଛି।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-010",
+    "category": "LOCATION",
+    "referenceText": "ଆମେ ଉତ୍ତର ଦିଗକୁ ଯାଉଛୁ।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-011",
+    "category": "EMERGENCY",
+    "referenceText": "ଦୟାକରି ତୁରନ୍ତ ଉଦ୍ଧାରକାରୀ ଦଳ ପଠାନ୍ତୁ।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-012",
+    "category": "EMERGENCY",
+    "referenceText": "ବନ୍ୟା ଜଳ ଗାଁ ଭିତରକୁ ପଶି ଆସିଛି।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-013",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "ସମସ୍ତ ଯୋଗାଯୋଗ ବିଚ୍ଛିନ୍ନ ହୋଇଯାଇଛି, ରେଡିଓ ଚାଲୁ ରଖନ୍ତୁ।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-014",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "ଡାକ୍ତରୀ ଦଳକୁ ଶୀଘ୍ର ସୁରକ୍ଷିତ ସ୍ଥାନକୁ ଆଣନ୍ତୁ।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-015",
+    "category": "CONVERSATION",
+    "referenceText": "ଆପଣଙ୍କ ପାଖରେ ଅଧିକ ବ୍ୟାଟେରୀ ଉପଲବ୍ଧ ଅଛି କି?",
+    "isCritical": false
+  },
+  {
+    "id": "OR-016",
+    "category": "CONVERSATION",
+    "referenceText": "ସ୍ଥାନୀୟ ପ୍ରଶାସନ ସମସ୍ତଙ୍କୁ ସତର୍କ ରହିବାକୁ କହିଛି।",
+    "isCritical": false
+  },
+  {
+    "id": "OR-CRIT-017",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ତୁରନ୍ତ ଖାଲି କରନ୍ତୁ",
+    "isCritical": true
+  },
+  {
+    "id": "OR-CRIT-018",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ଖାଲି କରନ୍ତୁ ନାହିଁ",
+    "isCritical": true
+  },
+  {
+    "id": "OR-CRIT-019",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ରାସ୍ତା ଖୋଲା ଅଛି",
+    "isCritical": true
+  },
+  {
+    "id": "OR-CRIT-020",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ରାସ୍ତା ବନ୍ଦ ଅଛି",
+    "isCritical": true
+  },
+  {
+    "id": "OR-CRIT-021",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ରୋଗୀ ଚେତନାରେ ଅଛନ୍ତି",
+    "isCritical": true
+  },
+  {
+    "id": "OR-CRIT-022",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ରୋଗୀ ଅଚେତ ଅଛନ୍ତି",
+    "isCritical": true
+  },
+  {
+    "id": "OR-CRIT-023",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ନିଆଁ ନିୟନ୍ତ୍ରଣରେ ଅଛି",
+    "isCritical": true
+  },
+  {
+    "id": "OR-CRIT-024",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ନିଆଁ ନିୟନ୍ତ୍ରଣରେ ନାହିଁ",
+    "isCritical": true
+  }
+]

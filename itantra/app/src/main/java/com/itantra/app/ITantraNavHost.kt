@@ -2,6 +2,8 @@ package com.itantra.app
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,6 +24,8 @@ object ITantraDestinations {
     const val LANGUAGE_PACKS = "language_packs"
     const val DIAGNOSTICS = "diagnostics"
     const val BENCHMARK = "benchmark"
+    const val TTS_EVALUATION = "tts_evaluation"
+    const val PERFORMANCE_BENCHMARK = "performance_benchmark"
     const val CONNECT = "connect"
 }
 
@@ -85,7 +89,9 @@ fun ITantraNavHost(navController: NavHostController = rememberNavController()) {
             DiagnosticsScreen(
                 viewModel = viewModel,
                 onBack = { navController.popBackStack() },
-                onLaunchBenchmark = { navController.navigate(ITantraDestinations.BENCHMARK) }
+                onLaunchBenchmark = { navController.navigate(ITantraDestinations.BENCHMARK) },
+                onLaunchTtsEvaluation = { navController.navigate(ITantraDestinations.TTS_EVALUATION) },
+                onLaunchPerformanceBenchmark = { navController.navigate(ITantraDestinations.PERFORMANCE_BENCHMARK) }
             )
         }
         composable(ITantraDestinations.BENCHMARK) {
@@ -99,6 +105,27 @@ fun ITantraNavHost(navController: NavHostController = rememberNavController()) {
             }
             com.itantra.feature.benchmark.BenchmarkScreen(
                 viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(ITantraDestinations.TTS_EVALUATION) {
+            val context = LocalContext.current
+            val viewModel = viewModelWithFactory {
+                com.itantra.feature.benchmark.TtsEvaluationViewModel(
+                    context = context,
+                    activeLanguageSessionManager = AppGraph.activeLanguageSessionManager,
+                    benchmarkRepository = AppGraph.localBenchmarkRepository
+                )
+            }
+            com.itantra.feature.benchmark.TtsEvaluationScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(ITantraDestinations.PERFORMANCE_BENCHMARK) {
+            val metrics by AppGraph.metricsRecorder.latest.collectAsState()
+            com.itantra.feature.diagnostics.PerformanceBenchmarkScreen(
+                metrics = metrics,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

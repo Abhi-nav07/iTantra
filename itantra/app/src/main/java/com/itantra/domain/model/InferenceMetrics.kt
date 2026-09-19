@@ -19,12 +19,22 @@ data class SttMetrics(
  */
 data class TtsMetrics(
     val modelLoadTimeMillis: Measurement<Long> = Measurement.NotMeasured,
+    /**
+     * TTFA proxy = full batch generation latency.
+     * Note: Current batch VITS generation produces the entire waveform before playback;
+     * this is batch synthesis latency, not true streaming first-audio latency.
+     */
     val timeToFirstAudioMillis: Measurement<Long> = Measurement.NotMeasured,
+    /** Actual compute time in ms to synthesize audio. */
     val synthesisDurationMillis: Measurement<Long> = Measurement.NotMeasured,
-    /** Real-Time Factor = synthesisDuration / audioDuration. <1.0 is faster
+    /** Real-Time Factor = synthesisComputeTime / generatedAudioDuration. <1.0 is faster
      *  than real-time playback. */
     val realTimeFactor: Measurement<Double> = Measurement.NotMeasured,
-)
+) {
+    /** Direct alias for batch synthesis latency */
+    val batchGenerationLatencyMillis: Measurement<Long>
+        get() = timeToFirstAudioMillis
+}
 
 /**
  * Coarse system-level figures shown on the diagnostics screen.

@@ -23,11 +23,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.security.MessageDigest
 
 class RealLanguagePackRepository(
     private val context: Context,
@@ -46,29 +48,38 @@ class RealLanguagePackRepository(
     private val downloadProgress = MutableStateFlow<Map<LanguageCode, Int>>(emptyMap())
     private val downloadJobs = mutableMapOf<LanguageCode, Job>()
 
+    private fun isSharedSttReady(): Boolean {
+        val spec = ModelFileSpecs.getSttSpec(LanguageCode.HINDI)
+        val sharedDir = File(storage.packDirectory(LanguageCode.HINDI).parentFile, "shared/stt")
+        if (!sharedDir.exists()) return false
+        return spec.requiredFiles.all {
+            val f = File(sharedDir, it)
+            f.exists() && f.length() > 0L
+        }
+    }
+
+    private fun isTtsReady(code: LanguageCode): Boolean {
+        val spec = ModelFileSpecs.getTtsSpec(code) ?: return false
+        val dir = File(storage.packDirectory(code), "tts")
+        if (!dir.exists()) return false
+        return spec.requiredFiles.all {
+            val f = File(dir, it)
+            f.exists() && f.length() > 0L
+        }
+    }
+
     private fun buildInitialSttStates(): Map<LanguageCode, LanguagePackInstallState> {
+        val sharedReady = isSharedSttReady()
+        val state = if (sharedReady) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
         return LanguageCatalog.all.associate { lang ->
-            val dir = File(storage.packDirectory(lang.code), "stt")
-            val spec = ModelFileSpecs.getSttSpec(lang.code)
-            if (spec == null) {
-                lang.code to LanguagePackInstallState.NOT_INSTALLED
-            } else {
-                val sttExists = spec.requiredFiles.all { File(dir, it).exists() && File(dir, it).length() > 0 }
-                lang.code to if (sttExists) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
-            }
+            lang.code to state
         }
     }
 
     private fun buildInitialTtsStates(): Map<LanguageCode, LanguagePackInstallState> {
         return LanguageCatalog.all.associate { lang ->
-            val dir = File(storage.packDirectory(lang.code), "tts")
-            val spec = ModelFileSpecs.getTtsSpec(lang.code)
-            if (spec == null) {
-                lang.code to LanguagePackInstallState.NOT_INSTALLED
-            } else {
-                val ttsExists = spec.requiredFiles.all { File(dir, it).exists() && File(dir, it).length() > 0 }
-                lang.code to if (ttsExists) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
-            }
+            val ready = isTtsReady(lang.code)
+            lang.code to if (ready) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
         }
     }
 
@@ -77,17 +88,19 @@ class RealLanguagePackRepository(
             LanguageCatalog.all.map { lang ->
                 val sttState = currentStt[lang.code] ?: LanguagePackInstallState.NOT_INSTALLED
                 val ttsState = currentTts[lang.code] ?: LanguagePackInstallState.NOT_INSTALLED
+                val isFullyInstalled = (sttState == LanguagePackInstallState.INSTALLED && ttsState == LanguagePackInstallState.INSTALLED)
+
                 val availability = when {
                     active == lang.code -> LanguagePackAvailability.ACTIVE
-                    sttState == LanguagePackInstallState.INSTALLED || ttsState == LanguagePackInstallState.INSTALLED -> LanguagePackAvailability.DOWNLOADED
+                    isFullyInstalled -> LanguagePackAvailability.DOWNLOADED
                     else -> LanguagePackAvailability.AVAILABLE
                 }
 
                 var sttSize = 0L
                 if (sttState == LanguagePackInstallState.INSTALLED) {
-                    val dir = File(storage.packDirectory(lang.code), "stt")
-                    ModelFileSpecs.getSttSpec(lang.code)?.requiredFiles?.forEach { f ->
-                        val file = File(dir, f)
+                    val sharedDir = File(storage.packDirectory(lang.code).parentFile, "shared/stt")
+                    ModelFileSpecs.getSttSpec(lang.code).requiredFiles.forEach { f ->
+                        val file = File(sharedDir, f)
                         if (file.exists()) sttSize += file.length()
                     }
                 }
@@ -129,6 +142,9 @@ class RealLanguagePackRepository(
     }
 
     override suspend fun setActiveLanguage(code: LanguageCode): Boolean {
+        if (!storage.isInstalled(code)) {
+            return false
+        }
         activeLanguage.value = code
         context.getSharedPreferences("lang_prefs", Context.MODE_PRIVATE).edit().putString("source_lang", code.wireCode).apply()
         return true
@@ -141,78 +157,103 @@ class RealLanguagePackRepository(
     }
 
     override suspend fun startDownload(code: LanguageCode) {
+        val ttsSpec = ModelFileSpecs.getTtsSpec(code) ?: return
         val sttSpec = ModelFileSpecs.getSttSpec(code)
-        val ttsSpec = ModelFileSpecs.getTtsSpec(code)
-
-        if (sttSpec == null && ttsSpec == null) {
-            return
-        }
-
         val manifest = getManifest(code) ?: return
 
-        if (sttSpec != null) updateState(code, LanguagePackInstallState.DOWNLOADING, true)
-        if (ttsSpec != null) updateState(code, LanguagePackInstallState.DOWNLOADING, false)
+        val needSharedStt = !isSharedSttReady()
+
+        if (needSharedStt) {
+            LanguageCatalog.all.forEach { updateState(it.code, LanguagePackInstallState.DOWNLOADING, true) }
+        }
+        updateState(code, LanguagePackInstallState.DOWNLOADING, false)
         updateProgress(code, 0)
 
         val rootDir = storage.packDirectory(code)
+        val parentDir = requireNotNull(rootDir.parentFile) { "Pack parent directory must exist" }
+        val sharedDir = File(parentDir, "shared/stt")
         val tmpDir = File(rootDir, ".install_tmp")
         tmpDir.deleteRecursively()
         tmpDir.mkdirs()
 
-        val statFs = StatFs(rootDir.absolutePath)
+        val statFs = StatFs(parentDir.absolutePath)
         val availableBytes = statFs.availableBlocksLong * statFs.blockSizeLong
-        val requiredBytes = (manifest.sttModel.sizeBytes + (manifest.ttsModel?.sizeBytes ?: 0L)) + 50_000_000L
+        val requiredBytes = (if (needSharedStt) manifest.sttModel.sizeBytes else 0L) +
+            manifest.ttsModel.sizeBytes + 50_000_000L
 
         if (availableBytes < requiredBytes) {
-            if (sttSpec != null) updateState(code, LanguagePackInstallState.ERROR, true)
-            if (ttsSpec != null) updateState(code, LanguagePackInstallState.ERROR, false)
+            if (needSharedStt) {
+                LanguageCatalog.all.forEach { updateState(it.code, LanguagePackInstallState.ERROR, true) }
+            }
+            updateState(code, LanguagePackInstallState.ERROR, false)
             updateProgress(code, null)
             return
         }
 
         val job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                if (sttSpec != null) {
+                // 1. Download shared multilingual STT if missing
+                if (needSharedStt) {
                     val sttUrlBase = manifest.sttModel.downloadUrl ?: throw Exception("No STT URL")
-                    val tmpStt = File(tmpDir, "stt")
+                    val tmpStt = File(tmpDir, "shared_stt")
                     tmpStt.mkdirs()
 
                     sttSpec.requiredFiles.forEach { file ->
-                        downloadFile("$sttUrlBase/$file", File(tmpStt, file), code, isSecondary = false)
+                        val targetFile = File(tmpStt, file)
+                        downloadFile("$sttUrlBase/$file", targetFile, code, isSecondary = false)
+                        val expectedSha = manifest.sttModel.checksumsSha256[file]
+                        if (!expectedSha.isNullOrEmpty()) {
+                            verifySha256(targetFile, expectedSha)
+                        }
                     }
                 }
 
-                if (ttsSpec != null) {
-                    val ttsUrlBase = manifest.ttsModel?.downloadUrl ?: throw Exception("No TTS URL")
-                    val tmpTts = File(tmpDir, "tts")
-                    tmpTts.mkdirs()
+                // 2. Download per-language TTS
+                val ttsUrlBase = manifest.ttsModel.downloadUrl ?: throw Exception("No TTS URL")
+                val tmpTts = File(tmpDir, "tts")
+                tmpTts.mkdirs()
 
-                    ttsSpec.requiredFiles.forEach { file ->
-                        downloadFile("$ttsUrlBase/$file", File(tmpTts, file), code, isSecondary = false)
+                ttsSpec.requiredFiles.forEach { file ->
+                    val targetFile = File(tmpTts, file)
+                    downloadFile("$ttsUrlBase/$file", targetFile, code, isSecondary = false)
+                    val expectedSha = manifest.ttsModel.checksumsSha256[file]
+                    if (!expectedSha.isNullOrEmpty()) {
+                        verifySha256(targetFile, expectedSha)
                     }
                 }
 
-                // Atomic Move
-                if (sttSpec != null) {
-                    val sttDest = File(rootDir, "stt")
-                    sttDest.deleteRecursively()
-                    Files.move(File(tmpDir, "stt").toPath(), sttDest.toPath(), StandardCopyOption.ATOMIC_MOVE)
-                    updateState(code, LanguagePackInstallState.INSTALLED, true)
+                // 3. Atomic Move shared STT
+                if (needSharedStt) {
+                    sharedDir.mkdirs()
+                    val tmpStt = File(tmpDir, "shared_stt")
+                    sttSpec.requiredFiles.forEach { file ->
+                        val destFile = File(sharedDir, file)
+                        if (destFile.exists()) destFile.delete()
+                        Files.move(File(tmpStt, file).toPath(), destFile.toPath(), StandardCopyOption.ATOMIC_MOVE)
+                    }
+                    LanguageCatalog.all.forEach { updateState(it.code, LanguagePackInstallState.INSTALLED, true) }
                 }
-                if (ttsSpec != null) {
-                    val ttsDest = File(rootDir, "tts")
-                    ttsDest.deleteRecursively()
-                    Files.move(File(tmpDir, "tts").toPath(), ttsDest.toPath(), StandardCopyOption.ATOMIC_MOVE)
-                    updateState(code, LanguagePackInstallState.INSTALLED, false)
-                }
+
+                // 4. Atomic Move per-language TTS
+                val ttsDest = File(rootDir, "tts")
+                ttsDest.deleteRecursively()
+                Files.move(File(tmpDir, "tts").toPath(), ttsDest.toPath(), StandardCopyOption.ATOMIC_MOVE)
+                updateState(code, LanguagePackInstallState.INSTALLED, false)
+
             } catch (e: kotlinx.coroutines.CancellationException) {
-                // Ignore, keep valid packs
-                if (sttSpec != null) updateState(code, if (File(rootDir, "stt").exists()) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED, true)
-                if (ttsSpec != null) updateState(code, if (File(rootDir, "tts").exists()) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED, false)
+                if (needSharedStt) {
+                    val sttOk = isSharedSttReady()
+                    LanguageCatalog.all.forEach {
+                        updateState(it.code, if (sttOk) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED, true)
+                    }
+                }
+                updateState(code, if (isTtsReady(code)) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED, false)
             } catch (e: Exception) {
                 e.printStackTrace()
-                if (sttSpec != null) updateState(code, LanguagePackInstallState.ERROR, true)
-                if (ttsSpec != null) updateState(code, LanguagePackInstallState.ERROR, false)
+                if (needSharedStt) {
+                    LanguageCatalog.all.forEach { updateState(it.code, LanguagePackInstallState.ERROR, true) }
+                }
+                updateState(code, LanguagePackInstallState.ERROR, false)
             } finally {
                 tmpDir.deleteRecursively()
                 updateProgress(code, null)
@@ -220,6 +261,24 @@ class RealLanguagePackRepository(
             }
         }
         downloadJobs[code] = job
+    }
+
+    private fun verifySha256(file: File, expectedSha: String) {
+        if (!file.exists() || file.length() == 0L) {
+            throw IllegalStateException("File missing or zero-byte: ${file.name}")
+        }
+        val digest = MessageDigest.getInstance("SHA-256")
+        FileInputStream(file).use { input ->
+            val buf = ByteArray(8192)
+            var r: Int
+            while (input.read(buf).also { r = it } != -1) {
+                digest.update(buf, 0, r)
+            }
+        }
+        val actualSha = digest.digest().joinToString("") { "%02x".format(it) }
+        if (!actualSha.equals(expectedSha, ignoreCase = true)) {
+            throw IllegalStateException("Checksum mismatch for ${file.name}: expected $expectedSha, got $actualSha")
+        }
     }
 
     private suspend fun downloadFile(urlStr: String, dest: File, code: LanguageCode, isSecondary: Boolean) = withContext(Dispatchers.IO) {
@@ -255,7 +314,6 @@ class RealLanguagePackRepository(
         if (tempDest.length() == 0L) {
             throw Exception("Downloaded file is 0 bytes: $urlStr")
         }
-        // Rename part file securely
         Files.move(tempDest.toPath(), dest.toPath(), StandardCopyOption.ATOMIC_MOVE)
     }
 
@@ -271,8 +329,13 @@ class RealLanguagePackRepository(
 
     override suspend fun deleteInstalledPack(code: LanguageCode) {
         storage.deletePack(code)
-        updateState(code, LanguagePackInstallState.NOT_INSTALLED, true)
         updateState(code, LanguagePackInstallState.NOT_INSTALLED, false)
+
+        // Shared STT remains untouched: verify actual disk state
+        val sharedReady = isSharedSttReady()
+        val sttState = if (sharedReady) LanguagePackInstallState.INSTALLED else LanguagePackInstallState.NOT_INSTALLED
+        LanguageCatalog.all.forEach { updateState(it.code, sttState, true) }
+
         if (activeLanguage.value == code) {
             activeLanguage.value = null
         }

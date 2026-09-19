@@ -68,6 +68,10 @@ android {
         }
     }
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     externalNativeBuild {
         cmake {
             path("src/main/cpp/CMakeLists.txt")

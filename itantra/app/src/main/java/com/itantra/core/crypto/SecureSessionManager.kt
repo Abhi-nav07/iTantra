@@ -37,6 +37,12 @@ class SecureSessionManager {
     private var txCounter: Long = 0
     private var highestAcceptedRxCounter: Long = -1
 
+    // Two-Party SAS Verification Tracking (Section H)
+    var localSasConfirmed: Boolean = false
+        private set
+    var peerSasConfirmed: Boolean = false
+        private set
+
     // Metrics
     var lastHandshakeDurationMillis: Long = 0
     var lastVerificationDurationMillis: Long = 0
@@ -164,22 +170,46 @@ class SecureSessionManager {
         }
     }
 
+    /**
+     * Local user confirms that the displayed SAS matches the peer's SAS.
+     * Transitions to SECURE_VERIFIED ONLY if peer has also confirmed.
+     */
     fun confirmSasMatch(): ItantraPacket {
-        lastVerificationDurationMillis = (System.nanoTime() - verificationStartNanos) / 1_000_000
+        localSasConfirmed = true
+        checkVerificationState()
         return ItantraPacket(
             type = PacketType.SECURE_VERIFY,
             messageId = System.currentTimeMillis()
         )
     }
 
+    /**
+     * Rejection by user immediately resets the session and marks state FAILED.
+     */
     fun rejectSas() {
         resetSession()
         _state.value = SecureSessionState.FAILED
     }
 
+    /**
+     * Processes incoming SECURE_VERIFY from peer.
+     * Transitions to SECURE_VERIFIED ONLY if local user has also confirmed.
+     */
     fun processSecureVerify(packet: ItantraPacket) {
-        if (_state.value == SecureSessionState.WAITING_USER_VERIFICATION) {
-            _state.value = SecureSessionState.SECURE_VERIFIED
+        if (_state.value != SecureSessionState.WAITING_USER_VERIFICATION &&
+            _state.value != SecureSessionState.SECURE_VERIFIED) {
+            return // Ignore if not handshaking or already verified
+        }
+        peerSasConfirmed = true
+        checkVerificationState()
+    }
+
+    private fun checkVerificationState() {
+        if (localSasConfirmed && peerSasConfirmed) {
+            if (_state.value == SecureSessionState.WAITING_USER_VERIFICATION) {
+                lastVerificationDurationMillis = (System.nanoTime() - verificationStartNanos) / 1_000_000
+                _state.value = SecureSessionState.SECURE_VERIFIED
+            }
         }
     }
 
@@ -278,5 +308,7 @@ class SecureSessionManager {
         rxNoncePrefix = null
         txCounter = 0
         highestAcceptedRxCounter = -1
+        localSasConfirmed = false
+        peerSasConfirmed = false
     }
 }

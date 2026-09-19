@@ -108,8 +108,8 @@ class TransportCoordinator(
 
             TransmissionMetrics(
                 payloadBytes = Measurement.Measured(packet.payload.size),
-                secureBytes = Measurement.Measured(packet.payload.size + 32), // 28-byte AAD + 4-byte payload length + encrypted payload
-                finalFrameBytes = Measurement.Measured(encoded.size),
+                secureBytes = Measurement.Measured(packet.payload.size), // Actual ciphertext bytes
+                finalFrameBytes = Measurement.Measured(encoded.size),   // Authoritative wire frame size
                 packetBytes = Measurement.Measured(encoded.size),
                 transmissionLatencyMillis = txLatency?.let { Measurement.Measured(it / 1_000_000) } ?: Measurement.NotMeasured
             )

@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.media.audiofx.AcousticEchoCanceler
+import android.media.audiofx.AudioEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.CoroutineScope
@@ -14,7 +16,20 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.isActive
 
-class MicrophoneAudioSource(scope: CoroutineScope) {
+enum class AecStatus {
+    AEC_SUPPORTED,
+    AEC_ENABLED,
+    AEC_DISABLED,
+    AEC_UNAVAILABLE
+}
+
+class MicrophoneAudioSource(
+    scope: CoroutineScope,
+    private val enableAecIfAvailable: Boolean = true
+) {
+
+    var currentAecStatus: AecStatus = AecStatus.AEC_UNAVAILABLE
+        private set
 
     @SuppressLint("MissingPermission")
     val stream: SharedFlow<FloatArray> = callbackFlow {
@@ -43,6 +58,30 @@ class MicrophoneAudioSource(scope: CoroutineScope) {
             return@callbackFlow
         }
 
+        var echoCanceler: AcousticEchoCanceler? = null
+        try {
+            if (enableAecIfAvailable && AcousticEchoCanceler.isAvailable()) {
+                currentAecStatus = AecStatus.AEC_SUPPORTED
+                echoCanceler = AcousticEchoCanceler.create(audioRecord.audioSessionId)
+                if (echoCanceler != null) {
+                    val res = echoCanceler.setEnabled(true)
+                    currentAecStatus = if (res == AudioEffect.SUCCESS && echoCanceler.enabled) {
+                        AecStatus.AEC_ENABLED
+                    } else {
+                        AecStatus.AEC_DISABLED
+                    }
+                } else {
+                    currentAecStatus = AecStatus.AEC_UNAVAILABLE
+                }
+            } else {
+                currentAecStatus = AecStatus.AEC_UNAVAILABLE
+            }
+        } catch (t: Throwable) {
+            // Devices with buggy HAL or missing effects fallback gracefully
+            currentAecStatus = AecStatus.AEC_UNAVAILABLE
+            t.printStackTrace()
+        }
+
         audioRecord.startRecording()
         val buffer = ShortArray(bufferSize / 2)
 
@@ -58,6 +97,11 @@ class MicrophoneAudioSource(scope: CoroutineScope) {
                 }
             }
         } finally {
+            try {
+                echoCanceler?.release()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
             audioRecord.stop()
             audioRecord.release()
         }

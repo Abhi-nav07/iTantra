@@ -1,46 +1,254 @@
 [
   {
-    "language": "hi",
+    "language": "all",
     "type": "STT",
+    "model_id": "whisper-tiny-multilingual",
     "repo_id": "csukuangfj/sherpa-onnx-whisper-tiny",
-    "filenames": ["tiny-encoder.int8.onnx", "tiny-decoder.int8.onnx", "tiny-tokens.txt"],
+    "filenames": [
+      "tiny-encoder.int8.onnx",
+      "tiny-decoder.int8.onnx",
+      "tiny-tokens.txt"
+    ],
     "runtime": "sherpa-onnx",
-    "license": "Apache 2.0",
+    "license": "Apache 2.0 / MIT",
     "source_url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-tiny",
     "verified": true,
-    "sha256": null
+    "sha256": {
+      "tiny-encoder.int8.onnx": "d24fb083ae3b1041fc24e97971d60e280c9342201fbb67b0ab428a8b4a51a434",
+      "tiny-decoder.int8.onnx": "d2fece8dd42771f1df975c6c0445770d0c292bf7547c2cae04a6c0cc57540925",
+      "tiny-tokens.txt": "b34b360dbb493e781e479794586d661700670d65564001f23024971d1f2fa126"
+    }
   },
   {
-    "language": "en",
-    "type": "STT",
-    "repo_id": "csukuangfj/sherpa-onnx-whisper-tiny",
-    "filenames": ["tiny-encoder.int8.onnx", "tiny-decoder.int8.onnx", "tiny-tokens.txt"],
-    "runtime": "sherpa-onnx",
-    "license": "Apache 2.0",
-    "source_url": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-tiny",
+    "language": "indic-en",
+    "type": "MT",
+    "model_id": "indictrans2-indic-en-dist-200M",
+    "repo_id": "adalat-ai/ct2-rotary-indictrans2-indic-en-dist-200M",
+    "filenames": [
+      "model.bin",
+      "config.json",
+      "source_vocabulary.json",
+      "target_vocabulary.json",
+      "vocab/model.SRC",
+      "vocab/model.TGT"
+    ],
+    "runtime": "ctranslate2",
+    "license": "MIT / CC-BY-4.0",
+    "source_url": "https://huggingface.co/adalat-ai/ct2-rotary-indictrans2-indic-en-dist-200M",
     "verified": true,
-    "sha256": null
+    "sha256": {
+      "model.bin": "a88c1c56918d267c4003279b2b3d4ed47f7e18a859d38ebb8491da6c422e4de8",
+      "config.json": "10874b31f398169314575b99a04560b6d8944fba1c7a0d96eb89f7676bf08979",
+      "source_vocabulary.json": "26d1ba4b6e918bef2bdccf1e0370130a3d641d30f7a945898a00f56043a9d8ad",
+      "target_vocabulary.json": "debadde275c3afb460bf97913d02959537a4e24350376b93f1cba878e3661453",
+      "vocab/model.SRC": "ac9257c8e76b8b607705b959cc3d075656ea33032f7a974e467b8941df6e98d4",
+      "vocab/model.TGT": "3cedc5cbcc740369b76201942a0f096fec7287fee039b55bdb956f301235b914"
+    }
+  },
+  {
+    "language": "en-indic",
+    "type": "MT",
+    "model_id": "indictrans2-en-indic-dist-200M",
+    "repo_id": "adalat-ai/ct2-rotary-indictrans2-en-indic-dist-200M",
+    "filenames": [
+      "model.bin",
+      "config.json",
+      "source_vocabulary.json",
+      "target_vocabulary.json",
+      "vocab/model.SRC",
+      "vocab/model.TGT"
+    ],
+    "runtime": "ctranslate2",
+    "license": "MIT / CC-BY-4.0",
+    "source_url": "https://huggingface.co/adalat-ai/ct2-rotary-indictrans2-en-indic-dist-200M",
+    "verified": true,
+    "sha256": {
+      "model.bin": "2b4b4c195008f27e97f39be503f470b583c22fd670e67a9a886431df61348eba",
+      "config.json": "10874b31f398169314575b99a04560b6d8944fba1c7a0d96eb89f7676bf08979",
+      "source_vocabulary.json": "66919522447d51be41250cc780c656e2ef495c403f96a7e4294dc36472524b8d",
+      "target_vocabulary.json": "7f28e3f24fcd0a203eb307e8c56ac0b99350a6a1562c25b6e8ffd97d6016878c",
+      "vocab/model.SRC": "3cedc5cbcc740369b76201942a0f096fec7287fee039b55bdb956f301235b914",
+      "vocab/model.TGT": "ac9257c8e76b8b607705b959cc3d075656ea33032f7a974e467b8941df6e98d4"
+    }
   },
   {
     "language": "hi",
     "type": "TTS",
-    "repo_id": "csukuangfj/vits-piper-hi_IN-pratham-medium",
-    "filenames": ["hi_IN-pratham-medium.onnx", "tokens.txt"],
+    "model_id": "mms-tts-hi",
+    "repo_id": "willwade/mms-tts-multilingual-models-onnx",
+    "filenames": [
+      "model.onnx",
+      "tokens.txt"
+    ],
     "runtime": "sherpa-onnx",
-    "license": "MIT",
-    "source_url": "https://huggingface.co/csukuangfj/vits-piper-hi_IN-pratham-medium",
+    "license": "CC-BY-NC 4.0",
+    "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
     "verified": true,
-    "sha256": null
+    "sha256": {
+      "model.onnx": "c44b4179e7ff0da4d76eac3929fc1dbd67c51f02da8fca083c445e17450c3f75",
+      "tokens.txt": "ef3a7e4a8d1af0c9d4dc45aaae1a6242ebe24a7ed6f3d025a49eb29682784c6d"
+    }
   },
   {
     "language": "en",
     "type": "TTS",
-    "repo_id": "csukuangfj/vits-piper-en_US-amy-medium",
-    "filenames": ["en_US-amy-medium.onnx", "tokens.txt"],
+    "model_id": "mms-tts-en",
+    "repo_id": "willwade/mms-tts-multilingual-models-onnx",
+    "filenames": [
+      "model.onnx",
+      "tokens.txt"
+    ],
     "runtime": "sherpa-onnx",
-    "license": "MIT",
-    "source_url": "https://huggingface.co/csukuangfj/vits-piper-en_US-amy-medium",
+    "license": "CC-BY-NC 4.0",
+    "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
     "verified": true,
-    "sha256": null
+    "sha256": {
+      "model.onnx": "409bafdb550948dc5c0b216e21b341732ef3cefead8008b512b034f1bdb27132",
+      "tokens.txt": "87c8ef66eae5473ed0cc0366b3964c736ca6c5f676c979522ea31234e47430b9"
+    }
+  },
+  {
+    "language": "bn",
+    "type": "TTS",
+    "model_id": "mms-tts-bn",
+    "repo_id": "willwade/mms-tts-multilingual-models-onnx",
+    "filenames": [
+      "model.onnx",
+      "tokens.txt"
+    ],
+    "runtime": "sherpa-onnx",
+    "license": "CC-BY-NC 4.0",
+    "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
+    "verified": true,
+    "sha256": {
+      "model.onnx": "c67081369061e87ba302bfbc0445543c4c23c04133514b7d6c7be2710363bc42",
+      "tokens.txt": "a74190ec42b8f0afb349276430c716f1b585090d8fe6d3c1d6d5fe510798a387"
+    }
+  },
+  {
+    "language": "gu",
+    "type": "TTS",
+    "model_id": "mms-tts-gu",
+    "repo_id": "willwade/mms-tts-multilingual-models-onnx",
+    "filenames": [
+      "model.onnx",
+      "tokens.txt"
+    ],
+    "runtime": "sherpa-onnx",
+    "license": "CC-BY-NC 4.0",
+    "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
+    "verified": true,
+    "sha256": {
+      "model.onnx": "6d9b4f268765e19b6620983bd698c5e4fa943309560b6c7b199b50a4aae30d47",
+      "tokens.txt": "2d855f2affb7586cc6be095a4382eb0bee2a22242deda32c86aab6b1a810d8c4"
+    }
+  },
+  {
+    "language": "mr",
+    "type": "TTS",
+    "model_id": "mms-tts-mr",
+    "repo_id": "willwade/mms-tts-multilingual-models-onnx",
+    "filenames": [
+      "model.onnx",
+      "tokens.txt"
+    ],
+    "runtime": "sherpa-onnx",
+    "license": "CC-BY-NC 4.0",
+    "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
+    "verified": true,
+    "sha256": {
+      "model.onnx": "046cecf7cca77680c9ca319953e777c8d0233ce78e9b55a47aa909edf87d99e8",
+      "tokens.txt": "4d968029d0754b41633cb0871cce6796a5ab3d3bc2b9b91c5721cfdf85156083"
+    }
+  },
+  {
+    "language": "kn",
+    "type": "TTS",
+    "model_id": "mms-tts-kn",
+    "repo_id": "willwade/mms-tts-multilingual-models-onnx",
+    "filenames": [
+      "model.onnx",
+      "tokens.txt"
+    ],
+    "runtime": "sherpa-onnx",
+    "license": "CC-BY-NC 4.0",
+    "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
+    "verified": true,
+    "sha256": {
+      "model.onnx": "9644cfa46c5802c4c2c8196f91eedc0cd54d46527bbc32589ebaf967ed07591f",
+      "tokens.txt": "a4a44037f7492c9e5b69a4483250e54af9a2d528bd4e19de95a21ff0c5e82a8a"
+    }
+  },
+  {
+    "language": "ml",
+    "type": "TTS",
+    "model_id": "mms-tts-ml",
+    "repo_id": "willwade/mms-tts-multilingual-models-onnx",
+    "filenames": [
+      "model.onnx",
+      "tokens.txt"
+    ],
+    "runtime": "sherpa-onnx",
+    "license": "CC-BY-NC 4.0",
+    "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
+    "verified": true,
+    "sha256": {
+      "model.onnx": "7f03397b7144325dc3deab36315c59e423319b8b575497caacbb08d28072b26c",
+      "tokens.txt": "3a752c36593cc519193c8caa6c00371369b423366fa6ead8d91945a28b2c46a3"
+    }
+  },
+  {
+    "language": "ta",
+    "type": "TTS",
+    "model_id": "mms-tts-ta",
+    "repo_id": "willwade/mms-tts-multilingual-models-onnx",
+    "filenames": [
+      "model.onnx",
+      "tokens.txt"
+    ],
+    "runtime": "sherpa-onnx",
+    "license": "CC-BY-NC 4.0",
+    "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
+    "verified": true,
+    "sha256": {
+      "model.onnx": "c44b4179e7ff0da4d76eac3929fc1dbd67c51f02da8fca083c445e17450c3f75",
+      "tokens.txt": "0b3f692319bb5fae8658e2f84bf252bca92450d0207bbba7273caa1a182d81b8"
+    }
+  },
+  {
+    "language": "te",
+    "type": "TTS",
+    "model_id": "mms-tts-te",
+    "repo_id": "willwade/mms-tts-multilingual-models-onnx",
+    "filenames": [
+      "model.onnx",
+      "tokens.txt"
+    ],
+    "runtime": "sherpa-onnx",
+    "license": "CC-BY-NC 4.0",
+    "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
+    "verified": true,
+    "sha256": {
+      "model.onnx": "a8ec6093c0ec3c6dcb7edc0c4cd6c08e312cd3299b00d0aa4988d2a7fea2baa5",
+      "tokens.txt": "528152cb4121272e6e71f7a1d91c8d4922b92fae414ae599db608cb92a738bb7"
+    }
+  },
+  {
+    "language": "or",
+    "type": "TTS",
+    "model_id": "mms-tts-or",
+    "repo_id": "willwade/mms-tts-multilingual-models-onnx",
+    "filenames": [
+      "model.onnx",
+      "tokens.txt"
+    ],
+    "runtime": "sherpa-onnx",
+    "license": "CC-BY-NC 4.0",
+    "source_url": "https://huggingface.co/willwade/mms-tts-multilingual-models-onnx",
+    "verified": true,
+    "sha256": {
+      "model.onnx": "ab867f39b00f1fcb39dc97f5079150959b50df50d7f10e75232c56b52f19c021",
+      "tokens.txt": "bc90e5423446ca730aef6b56a4656cb07421c7538429a50b9c396fe0758fd587"
+    }
   }
 ]

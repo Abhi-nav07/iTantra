@@ -115,4 +115,83 @@ class SecureSessionManagerTest {
         }
         assertTrue("Metadata tamper should throw Exception due to AAD mismatch", exceptionThrown)
     }
+
+    @Test
+    fun testLocalSasOnlyDoesNotVerify() {
+        val aliceHello = alice.startHandshake(isInitiator = true)
+        val bobHello = bob.processSecureHello(aliceHello)!!
+        alice.processSecureHello(bobHello)
+
+        // Alice confirms locally, Bob has NOT confirmed
+        alice.confirmSasMatch()
+
+        assertTrue(alice.localSasConfirmed)
+        assertFalse(alice.peerSasConfirmed)
+        assertEquals(SecureSessionState.WAITING_USER_VERIFICATION, alice.state.value)
+
+        // App traffic should be rejected
+        var encryptFailed = false
+        try {
+            alice.encrypt(ItantraPacket(type = PacketType.TEXT, messageId = 100L, payload = "Secret".toByteArray()))
+        } catch (e: IllegalStateException) {
+            encryptFailed = true
+        }
+        assertTrue("Cannot encrypt when only local SAS confirmed", encryptFailed)
+    }
+
+    @Test
+    fun testPeerSasOnlyDoesNotVerify() {
+        val aliceHello = alice.startHandshake(isInitiator = true)
+        val bobHello = bob.processSecureHello(aliceHello)!!
+        alice.processSecureHello(bobHello)
+
+        // Alice receives Bob's verify packet, but Alice herself has NOT confirmed
+        val bobVerifyPacket = ItantraPacket(type = PacketType.SECURE_VERIFY, messageId = 200L)
+        alice.processSecureVerify(bobVerifyPacket)
+
+        assertFalse(alice.localSasConfirmed)
+        assertTrue(alice.peerSasConfirmed)
+        assertEquals(SecureSessionState.WAITING_USER_VERIFICATION, alice.state.value)
+
+        // App traffic should be rejected
+        var encryptFailed = false
+        try {
+            alice.encrypt(ItantraPacket(type = PacketType.TEXT, messageId = 201L, payload = "Secret".toByteArray()))
+        } catch (e: IllegalStateException) {
+            encryptFailed = true
+        }
+        assertTrue("Cannot encrypt when only peer SAS confirmed", encryptFailed)
+    }
+
+    @Test
+    fun testRejectSasTransitionsToFailedAndResets() {
+        val aliceHello = alice.startHandshake(isInitiator = true)
+        val bobHello = bob.processSecureHello(aliceHello)!!
+        alice.processSecureHello(bobHello)
+
+        alice.rejectSas()
+
+        assertEquals(SecureSessionState.FAILED, alice.state.value)
+        assertFalse(alice.localSasConfirmed)
+        assertFalse(alice.peerSasConfirmed)
+        assertEquals(null, alice.sasCode.value)
+    }
+
+    @Test
+    fun testReplayedSecureVerifyDoesNotCorruptState() {
+        val aliceHello = alice.startHandshake(isInitiator = true)
+        val bobHello = bob.processSecureHello(aliceHello)!!
+        alice.processSecureHello(bobHello)
+
+        val aliceVerify = alice.confirmSasMatch()
+        val bobVerify = bob.confirmSasMatch()
+        alice.processSecureVerify(bobVerify)
+        bob.processSecureVerify(aliceVerify)
+
+        assertEquals(SecureSessionState.SECURE_VERIFIED, alice.state.value)
+
+        // Replay another SECURE_VERIFY
+        alice.processSecureVerify(bobVerify)
+        assertEquals(SecureSessionState.SECURE_VERIFIED, alice.state.value)
+    }
 }

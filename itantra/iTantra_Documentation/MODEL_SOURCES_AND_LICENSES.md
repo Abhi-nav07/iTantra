@@ -1,10 +1,9 @@
 # Model Sources and Licenses
 
-| Model Use | Artifact / Repo | Source Repository | License | Verification Status |
+| Model Use | Artifact / Repo | Source Repository | Exact License | Verification Status |
 |---|---|---|---|---|
-| Hindi STT | Whisper (tiny-encoder.int8.onnx, etc) | csukuangfj/sherpa-onnx-whisper-tiny.en | MIT | VERIFIED |
-| English STT | Whisper (tiny-encoder.int8.onnx, etc) | csukuangfj/sherpa-onnx-whisper-tiny.en | MIT | VERIFIED |
-| Hindi TTS | Piper/VITS (hi-tts.onnx) | csukuangfj/vits-piper-hi_IN-swara-low | Open (Apache/MIT) | VERIFIED |
-| English TTS | Piper/VITS (en-tts.onnx) | csukuangfj/vits-piper-en_US-amy-low | Open (Apache/MIT) | VERIFIED |
-| Machine Translation | IndicTrans2 / Marian NMT | AI4Bharat / HuggingFace | MIT / Open | REVIEW_REQUIRED (BLOCKED) |
-| Voice Activity Detection | Silero VAD (silero_vad.onnx) | snakers4/silero-vad | MIT | VERIFIED |
+| STT (All 10 Languages - Shared) | Whisper Tiny Multilingual (`tiny-encoder.int8.onnx`, `tiny-decoder.int8.onnx`, `tiny-tokens.txt`) | csukuangfj/sherpa-onnx-whisper-tiny | Apache 2.0 / MIT | VERIFIED |
+| TTS (All 10 Languages) | MMS TTS ONNX (`model.onnx`, `tokens.txt` per language) | willwade/mms-tts-multilingual-models-onnx | CC-BY-NC 4.0 | VERIFIED |
+| MT Indic->English | IndicTrans2 CT2 (`model.bin`, `config.json`, vocab files) | adalat-ai/ct2-rotary-indictrans2-indic-en-dist-200M | MIT / CC-BY-4.0 | VERIFIED |
+| MT English->Indic | IndicTrans2 CT2 (`model.bin`, `config.json`, vocab files) | adalat-ai/ct2-rotary-indictrans2-en-indic-dist-200M | MIT / CC-BY-4.0 | VERIFIED |
+| Voice Activity Detection | Silero VAD (`silero_vad.onnx`) | snakers4/silero-vad | MIT | VERIFIED |

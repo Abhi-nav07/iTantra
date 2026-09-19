@@ -1,30 +1,42 @@
 # Module 7B: Translation Runtime Integration
 
-This document outlines the real offline translation integration as implemented for iTantra, prioritizing ONNX Runtime for Seq2Seq architectures.
+This document outlines the real offline translation integration as implemented for iTantra, using native CTranslate2 inference via JNI.
 
 ## Runtime Selection
-- **Library**: `com.microsoft.onnxruntime:onnxruntime-android:1.17.1`
-- **Tokenizer Support**: `com.microsoft.onnxruntime:onnxruntime-extensions-android:1.17.1` (Optional for native tokenization, stubbed in current architecture).
-- **Justification**: Sherpa-ONNX is highly optimized for speech (Transducer/Conformer) and TTS (VITS), but does not expose a generalized Seq2Seq auto-regressive generation loop necessary for Neural Machine Translation (like IndicTrans2). A dedicated ONNX Runtime dependency allows manual encoder/decoder lifecycle management.
+- **Library**: CTranslate2 (C++ native, cross-compiled for ARM64-v8a via CMake)
+- **Tokenizer**: SentencePiece (C++ native, cross-compiled for ARM64-v8a)
+- **JNI Bridge**: `itantra_mt_jni.cpp` exposes `nativeCreateEngine`, `nativeTranslate`, `nativeDestroyEngine`
+- **Justification**: CTranslate2 provides optimized auto-regressive inference for Transformer models with efficient INT8 quantization. Native C++ execution avoids Java/ONNX overhead and provides direct access to the CTranslate2 generation API.
 
-## Real Generation Loop Architecture
-The `RealTranslationEngine` provides a structural baseline for actual neural machine translation without relying on mock outputs:
-1. **Pre-processing**: Prepends BCP-47 / model-specific language tags to the input string based on the `TranslationRouter` resolution.
-2. **Tokenization**: Uses an ONNX session wrapper (typically SentencePiece via ORT extensions) to convert Unicode to `input_ids`.
-3. **Encoder Execution**: Passes `input_ids` to `encoder_model.onnx` to generate `encoder_hidden_states`.
-4. **Decoder Loop (Auto-Regressive)**:
-   - Initializes a `decoder_input_ids` array with the `BOS` token.
-   - Feeds the `encoder_hidden_states` and previous tokens into `decoder_model.onnx`.
-   - Generates the next token using greedy search (`argmax`).
-   - Appends the generated token and repeats until the `EOS` token (e.g., `2L`) or `max_tokens` (128) is reached.
-5. **Detokenization**: Translates the generated IDs back into the target Unicode text.
+## Translation Architecture
+The `CTranslate2TranslationEngine` manages two directional models:
+1. **indic-en**: Translates any of 10 Indic languages to English
+2. **en-indic**: Translates English to any of 10 Indic languages
 
-## Same-Language Bypass & Interception
-The `TranslationRouter` sits inside the `TransceiverCoordinator`. When a `TEXT` packet is decrypted:
-1. The packet's `languageCode` is extracted.
-2. If it exactly matches the local `ActiveLanguageSessionManager`'s current active language, the MT engine is completely bypassed (0ms MT latency).
-3. If they differ, the text is routed to the MT engine.
-4. If the MT engine fails (missing files, OOM, timeout), the router catches the exception and immediately returns the original text to the TTS queue to ensure resilient communication.
+### Input Token Structure
+Tokens are constructed as: `[SOURCE_LANG_TAG, TARGET_LANG_TAG, *SP_TOKENS]`
+- Source/target tags use exact FLORES codes: `hin_Deva`, `eng_Latn`, `ben_Beng`, `guj_Gujr`, `mar_Deva`, `kan_Knda`, `mal_Mlym`, `tam_Taml`, `tel_Telu`, `ory_Orya`
 
-## Offline Provisioning Requirement
-Multi-hundred MB ONNX models are strictly excluded from the APK and Git repository. The engine expects models to be located in `context.filesDir/translation_models`. If these files do not exist at runtime, the `TranslationRouter` falls back to returning the original source text (state: `MODEL_NOT_INSTALLED`).
+### Translation Flow
+1. **Pre-processing**: FLORES language tag prepended based on source and target language
+2. **Tokenization**: SentencePiece model segments input text into subword tokens
+3. **Inference**: CTranslate2 `Translator::translate_batch()` runs auto-regressive generation
+4. **Detokenization**: SentencePiece decodes output tokens back to Unicode text
+
+### Indic-to-Indic Pivot
+For Indic↔Indic pairs (e.g., Hindi→Tamil):
+1. First pass: indic-en model translates Hindi → English
+2. Second pass: en-indic model translates English → Tamil
+3. Both models must be loaded (`indicEnReady && enIndicReady`)
+
+## Same-Language Bypass
+When `sourceLang == targetLang`, the engine immediately returns the input text without invoking any model (0ms MT latency).
+
+## Failure Handling
+- If models are not loaded, the engine returns `MODEL_NOT_INSTALLED` state
+- If translation fails at runtime, the original source text is passed through to TTS to ensure resilient communication
+
+## Model Files
+Models are provisioned via `tools/provision_models.py` and stored at:
+- `mt/indic-en/model.bin`, `config.json`, `source_vocabulary.json`, `target_vocabulary.json`, `vocab/model.SRC`, `vocab/model.TGT`
+- `mt/en-indic/` (symmetric structure)

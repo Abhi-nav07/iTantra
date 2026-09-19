@@ -1,0 +1,146 @@
+[
+  {
+    "id": "MR-001",
+    "category": "GREETINGS",
+    "referenceText": "नमस्कार, आपण कसे आहात?",
+    "isCritical": false
+  },
+  {
+    "id": "MR-002",
+    "category": "GREETINGS",
+    "referenceText": "शुभ सकाळ, आपला दिवस चांगला जावो.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-003",
+    "category": "GREETINGS",
+    "referenceText": "तुम्हाला भेटून खूप आनंद झाला.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-004",
+    "category": "SIMPLE_SPEECH",
+    "referenceText": "माझे नाव राहुल आहे आणि मी स्वयंसेवक आहे.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-005",
+    "category": "NUMBERS",
+    "referenceText": "येथे शंभरहून अधिक लोक अडकले आहेत.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-006",
+    "category": "NUMBERS",
+    "referenceText": "माझा फोन नंबर आठ नऊ दोन आहे.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-007",
+    "category": "NUMBERS",
+    "referenceText": "पन्नास पाकिटे अन्न आणि पाण्याची गरज आहे.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-008",
+    "category": "LOCATION",
+    "referenceText": "रुग्णालय येथून सुमारे पाच किलोमीटर अंतरावर आहे.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-009",
+    "category": "LOCATION",
+    "referenceText": "पुलाच्या पुढे पाण्याचा प्रवाह खूप वेगात आहे.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-010",
+    "category": "LOCATION",
+    "referenceText": "आम्ही उत्तर दिशेने पुढे जात आहोत.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-011",
+    "category": "EMERGENCY",
+    "referenceText": "कृपया त्वरित बचाव पथक पाठवा.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-012",
+    "category": "EMERGENCY",
+    "referenceText": "पुराचे पाणी गावात शिरले आहे.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-013",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "सर्व संपर्क यंत्रणा बंद आहे, रेडिओ सुरू ठेवा.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-014",
+    "category": "FIELD_INSTRUCTION",
+    "referenceText": "वैद्यकीय पथकाला लवकरात लवकर मदत केंद्रात आणा.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-015",
+    "category": "CONVERSATION",
+    "referenceText": "तुमच्याकडे अतिरिक्त बॅटऱ्या उपलब्ध आहेत का?",
+    "isCritical": false
+  },
+  {
+    "id": "MR-016",
+    "category": "CONVERSATION",
+    "referenceText": "स्थानिक प्रशासनाने नागरिकांना सतर्क राहण्यास सांगितले आहे.",
+    "isCritical": false
+  },
+  {
+    "id": "MR-CRIT-017",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "ताबडतोब रिकामे करा",
+    "isCritical": true
+  },
+  {
+    "id": "MR-CRIT-018",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "रिकामे करू नका",
+    "isCritical": true
+  },
+  {
+    "id": "MR-CRIT-019",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "रस्ता उघडा आहे",
+    "isCritical": true
+  },
+  {
+    "id": "MR-CRIT-020",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "रस्ता बंद आहे",
+    "isCritical": true
+  },
+  {
+    "id": "MR-CRIT-021",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "रुग्ण शुद्धीवर आहे",
+    "isCritical": true
+  },
+  {
+    "id": "MR-CRIT-022",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "रुग्ण बेशुद्ध आहे",
+    "isCritical": true
+  },
+  {
+    "id": "MR-CRIT-023",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "आग नियंत्रणात आहे",
+    "isCritical": true
+  },
+  {
+    "id": "MR-CRIT-024",
+    "category": "CRITICAL_PAIR",
+    "referenceText": "आग नियंत्रणात नाही",
+    "isCritical": true
+  }
+]
