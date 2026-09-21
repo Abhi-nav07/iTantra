@@ -49,4 +49,17 @@ class LanguagePacksViewModel(
             }
         }
     }
+
+    /**
+     * Phase 12: Initiates background provisioning/download of the requested language pack.
+     */
+    fun downloadLanguagePack(code: LanguageCode) {
+        viewModelScope.launch {
+            try {
+                repository.startDownload(code)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 }

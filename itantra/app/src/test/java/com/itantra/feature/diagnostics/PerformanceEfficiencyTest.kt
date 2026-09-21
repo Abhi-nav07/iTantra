@@ -184,7 +184,11 @@ class PerformanceEfficiencyTest {
         }
 
         val manager = ActiveLanguageSessionManager(factory)
-        manager.switchTo(LanguageCode.TAMIL)
+        try {
+            manager.switchTo(LanguageCode.TAMIL)
+        } catch (e: Exception) {
+            // Expected: exception propagates while setting ERROR state
+        }
 
         assertEquals(LanguageSessionState.ERROR, manager.sessionState.value)
         assertNull(manager.activeLanguage.value)

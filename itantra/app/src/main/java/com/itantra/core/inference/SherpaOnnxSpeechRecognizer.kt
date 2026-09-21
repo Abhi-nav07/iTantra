@@ -73,7 +73,7 @@ class SherpaOnnxSpeechRecognizer(
                     tailPaddings = -1
                 ),
                 tokens = File(sttDir, spec.tokensFile).absolutePath,
-                numThreads = 2,
+                numThreads = DEFAULT_NUM_THREADS,
                 debug = false
             )
         )
@@ -135,5 +135,9 @@ class SherpaOnnxSpeechRecognizer(
         recognizer?.release()
         recognizer = null
         isLoaded = false
+    }
+
+    companion object {
+        const val DEFAULT_NUM_THREADS = 2
     }
 }

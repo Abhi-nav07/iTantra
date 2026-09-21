@@ -402,6 +402,7 @@ private fun ContinuousListenArea(
                 com.itantra.core.inference.ContinuousListenState.SPEECH_DETECTED -> Triple(Icons.Default.Info, "Speech Detected", SignalGreen)
                 com.itantra.core.inference.ContinuousListenState.FINALIZING -> Triple(Icons.Default.Info, "Finalizing...", SignalGreenDim)
                 com.itantra.core.inference.ContinuousListenState.SEGMENT_READY -> Triple(Icons.Default.Check, "Segment Ready", SecureBlue)
+                com.itantra.core.inference.ContinuousListenState.PAUSED -> Triple(Icons.Default.Info, "Paused (TTS Active)", TextSecondary)
                 com.itantra.core.inference.ContinuousListenState.ERROR -> Triple(Icons.Default.Warning, "VAD Error", CriticalRed)
             }
 
