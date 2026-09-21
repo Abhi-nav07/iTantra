@@ -82,7 +82,17 @@ class MicrophoneAudioSource(
             t.printStackTrace()
         }
 
-        audioRecord.startRecording()
+        try {
+            audioRecord.startRecording()
+        } catch (e: Exception) {
+            close(Exception("AudioRecord.startRecording() threw exception", e))
+            return@callbackFlow
+        }
+        if (audioRecord.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+            close(Exception("AudioRecord.startRecording() failed: not in RECORDSTATE_RECORDING"))
+            return@callbackFlow
+        }
+
         val buffer = ShortArray(bufferSize / 2)
 
         try {
@@ -94,6 +104,12 @@ class MicrophoneAudioSource(
                         floatArray[i] = buffer[i] / 32768.0f
                     }
                     trySend(floatArray)
+                } else if (readResult == AudioRecord.ERROR_DEAD_OBJECT || readResult == AudioRecord.ERROR_INVALID_OPERATION) {
+                    android.util.Log.e("MicrophoneAudioSource", "AudioRecord unrecoverable read error: $readResult")
+                    break
+                } else if (readResult < 0) {
+                    android.util.Log.w("MicrophoneAudioSource", "AudioRecord transient read error: $readResult")
+                    kotlinx.coroutines.delay(10)
                 }
             }
         } finally {
@@ -102,8 +118,18 @@ class MicrophoneAudioSource(
             } catch (t: Throwable) {
                 t.printStackTrace()
             }
-            audioRecord.stop()
-            audioRecord.release()
+            try {
+                if (audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+                    audioRecord.stop()
+                }
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
+            try {
+                audioRecord.release()
+            } catch (t: Throwable) {
+                t.printStackTrace()
+            }
         }
 
         awaitClose {

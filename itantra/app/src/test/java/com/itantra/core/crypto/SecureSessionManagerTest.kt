@@ -1,5 +1,7 @@
 package com.itantra.core.crypto
 
+import kotlinx.coroutines.runBlocking
+
 import com.itantra.core.transport.packet.ItantraPacket
 import com.itantra.core.transport.packet.PacketType
 import org.junit.Assert.assertArrayEquals
@@ -22,7 +24,7 @@ class SecureSessionManagerTest {
     }
 
     @Test
-    fun testSuccessfulHandshakeAndEncryption() {
+    fun testSuccessfulHandshakeAndEncryption() = runBlocking {
         // 1. Alice starts handshake
         val aliceHello = alice.startHandshake(isInitiator = true)
         assertEquals(SecureSessionState.HANDSHAKING, alice.state.value)
@@ -70,7 +72,7 @@ class SecureSessionManagerTest {
     }
 
     @Test
-    fun testReplayProtection() {
+    fun testReplayProtection() = runBlocking {
         // Setup secure session
         val aliceHello = alice.startHandshake(isInitiator = true)
         val bobHello = bob.processSecureHello(aliceHello)!!
@@ -94,7 +96,7 @@ class SecureSessionManagerTest {
     }
 
     @Test
-    fun testAadMetadataTampering() {
+    fun testAadMetadataTampering() = runBlocking {
         val aliceHello = alice.startHandshake(isInitiator = true)
         val bobHello = bob.processSecureHello(aliceHello)!!
         alice.processSecureHello(bobHello)
@@ -117,7 +119,7 @@ class SecureSessionManagerTest {
     }
 
     @Test
-    fun testLocalSasOnlyDoesNotVerify() {
+    fun testLocalSasOnlyDoesNotVerify() = runBlocking {
         val aliceHello = alice.startHandshake(isInitiator = true)
         val bobHello = bob.processSecureHello(aliceHello)!!
         alice.processSecureHello(bobHello)
@@ -140,7 +142,7 @@ class SecureSessionManagerTest {
     }
 
     @Test
-    fun testPeerSasOnlyDoesNotVerify() {
+    fun testPeerSasOnlyDoesNotVerify() = runBlocking {
         val aliceHello = alice.startHandshake(isInitiator = true)
         val bobHello = bob.processSecureHello(aliceHello)!!
         alice.processSecureHello(bobHello)
@@ -164,7 +166,7 @@ class SecureSessionManagerTest {
     }
 
     @Test
-    fun testRejectSasTransitionsToFailedAndResets() {
+    fun testRejectSasTransitionsToFailedAndResets() = runBlocking {
         val aliceHello = alice.startHandshake(isInitiator = true)
         val bobHello = bob.processSecureHello(aliceHello)!!
         alice.processSecureHello(bobHello)
@@ -178,7 +180,7 @@ class SecureSessionManagerTest {
     }
 
     @Test
-    fun testReplayedSecureVerifyDoesNotCorruptState() {
+    fun testReplayedSecureVerifyDoesNotCorruptState() = runBlocking {
         val aliceHello = alice.startHandshake(isInitiator = true)
         val bobHello = bob.processSecureHello(aliceHello)!!
         alice.processSecureHello(bobHello)

@@ -96,6 +96,29 @@ class EmergencyPersistenceStore(
     }
 
     /**
+     * Resolves all active unresolved emergency records (e.g. upon ALL_CLEAR reception).
+     */
+    fun resolveAllEmergencies(): List<EmergencyRecord> {
+        synchronized(lock) {
+            val resolvedList = mutableListOf<EmergencyRecord>()
+            records.forEach { (id, record) ->
+                if (record.isUnresolved) {
+                    val updated = record.copy(
+                        humanAckStatus = true,
+                        retryStatus = EmergencyRetryStatus.HUMAN_ACKED
+                    )
+                    records[id] = updated
+                    resolvedList.add(updated)
+                }
+            }
+            if (resolvedList.isNotEmpty()) {
+                flushToDisk()
+            }
+            return resolvedList
+        }
+    }
+
+    /**
      * Bounded retry accounting. Increments retry count and sets last attempt timestamp.
      */
     fun recordRetryAttempt(messageId: Long, success: Boolean, timestamp: Long): EmergencyRecord? {

@@ -288,7 +288,7 @@ class BenchmarkViewModel(
                 deviceModel = Build.MODEL ?: "",
                 androidVersion = Build.VERSION.RELEASE ?: "",
                 abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "",
-                threadCount = 1,
+                threadCount = com.itantra.core.inference.SherpaOnnxSpeechRecognizer.DEFAULT_NUM_THREADS,
                 modelVersion = "Whisper Tiny Multilingual INT8 ONNX",
                 noiseCondition = _state.value.noiseCondition,
                 totalUtterances = results.size,

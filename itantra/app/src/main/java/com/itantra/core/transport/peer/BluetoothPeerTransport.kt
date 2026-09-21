@@ -1,4 +1,4 @@
-package com.itantra.core.transport.peer
+﻿package com.itantra.core.transport.peer
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
@@ -24,6 +24,13 @@ import java.util.UUID
 /**
  * Implementation of [PeerTransport] over Bluetooth RFCOMM.
  * Handles length-prefix framing but does NOT parse semantic packets.
+ *
+ * Phase 4 fixes:
+ * 1. startServer() now emits [ConnectionState.LISTENING] while blocking on accept(),
+ *    not [ConnectionState.CONNECTING]. CONNECTING is reserved for outbound dial.
+ * 2. ERROR state is preserved after a failure; disconnect() only transitions to
+ *    DISCONNECTED when called explicitly by upper layers, preventing the UI from
+ *    missing the error reason.
  */
 @SuppressLint("MissingPermission") // Permissions handled by UI before calling methods
 class BluetoothPeerTransport(
@@ -32,7 +39,6 @@ class BluetoothPeerTransport(
 ) : PeerTransport {
 
     companion object {
-        // Shared stable UUID for iTantra transceivers
         val ITANTRA_UUID: UUID = UUID.fromString("20f01a35-26a1-432a-bc95-021b36d0130a")
         const val NAME = "iTantraTransceiver"
     }
@@ -48,6 +54,9 @@ class BluetoothPeerTransport(
 
     private val stateFlow = MutableStateFlow(ConnectionState.DISCONNECTED)
     private val incomingFlow = MutableSharedFlow<ByteArray>(extraBufferCapacity = 64)
+
+    private val _connectedDeviceAddress = MutableStateFlow<String?>(null)
+    val connectedDeviceAddress: StateFlow<String?> = _connectedDeviceAddress
 
     private val writeMutex = Mutex()
 
@@ -68,7 +77,8 @@ class BluetoothPeerTransport(
         }
 
         connectionJob = scope.launch {
-            stateFlow.value = ConnectionState.CONNECTING // Technically LISTENING
+            // Phase 4 fix 1: LISTENING while blocked on accept(), not CONNECTING
+            stateFlow.value = ConnectionState.LISTENING
             try {
                 serverSocket = bluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, ITANTRA_UUID)
                 val socket = serverSocket?.accept() // Blocking call
@@ -76,9 +86,13 @@ class BluetoothPeerTransport(
                     manageConnectedSocket(socket)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
-                stateFlow.value = ConnectionState.ERROR
-                disconnect()
+                if (e !is CancellationException) {
+                    e.printStackTrace()
+                    // Phase 4 fix 2: set ERROR and do NOT immediately call disconnect()
+                    // Upper layers observe ERROR and decide whether to retry or show UI.
+                    // disconnect() is only called when the upper layer explicitly requests it.
+                    stateFlow.value = ConnectionState.ERROR
+                }
             }
         }
     }
@@ -93,14 +107,17 @@ class BluetoothPeerTransport(
 
         connectionJob = scope.launch {
             stateFlow.value = ConnectionState.CONNECTING
+            _connectedDeviceAddress.value = device.address
             try {
                 val socket = device.createRfcommSocketToServiceRecord(ITANTRA_UUID)
                 socket.connect() // Blocking call
                 manageConnectedSocket(socket)
             } catch (e: Exception) {
-                e.printStackTrace()
-                stateFlow.value = ConnectionState.ERROR
-                disconnect()
+                if (e !is CancellationException) {
+                    e.printStackTrace()
+                    // Phase 4 fix 2: preserve ERROR state, do not auto-disconnect
+                    stateFlow.value = ConnectionState.ERROR
+                }
             }
         }
     }
@@ -109,10 +126,10 @@ class BluetoothPeerTransport(
         activeSocket = socket
         inputStream = socket.inputStream
         outputStream = socket.outputStream
+        _connectedDeviceAddress.value = socket.remoteDevice?.address
         stateFlow.value = ConnectionState.CONNECTED
-        serverSocket?.close() // Stop listening for others
+        serverSocket?.close()
         serverSocket = null
-
         startReaderLoop()
     }
 
@@ -121,7 +138,6 @@ class BluetoothPeerTransport(
             try {
                 val inStream = inputStream ?: return@launch
                 while (isActive) {
-                    // 1. Read 4-byte frame length
                     val lengthBuffer = ByteArray(4)
                     var bytesRead = 0
                     while (bytesRead < 4) {
@@ -130,12 +146,9 @@ class BluetoothPeerTransport(
                         bytesRead += read
                     }
                     val frameLength = ByteBuffer.wrap(lengthBuffer).order(ByteOrder.BIG_ENDIAN).getInt()
-
                     if (frameLength <= 0 || frameLength > PacketDecoder.MAX_FRAME_BODY_SIZE) {
                         throw Exception("Invalid frame length: $frameLength")
                     }
-
-                    // 2. Read frame body
                     val frameData = ByteArray(frameLength)
                     bytesRead = 0
                     while (bytesRead < frameLength) {
@@ -143,39 +156,41 @@ class BluetoothPeerTransport(
                         if (read == -1) throw Exception("Stream closed")
                         bytesRead += read
                     }
-
-                    // 3. Emit deframed raw packet data upward
                     incomingFlow.emit(frameData)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
-                if (stateFlow.value != ConnectionState.DISCONNECTED) {
-                    stateFlow.value = ConnectionState.ERROR
+                if (e !is CancellationException) {
+                    e.printStackTrace()
+                    if (stateFlow.value != ConnectionState.DISCONNECTED) {
+                        stateFlow.value = ConnectionState.ERROR
+                    }
                 }
-                disconnect()
+                // Phase 4 fix 2: reader failure sets ERROR; explicit disconnect() transitions to DISCONNECTED
             }
         }
     }
 
     override suspend fun send(bytes: ByteArray) {
         if (!isConnected) return
-
         withContext(Dispatchers.IO) {
             try {
                 writeMutex.withLock {
                     outputStream?.write(bytes)
                     outputStream?.flush()
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 e.printStackTrace()
                 stateFlow.value = ConnectionState.ERROR
-                disconnect()
             }
         }
     }
 
     override suspend fun disconnect() {
+        // Explicit disconnect: transition to DISCONNECTED regardless of current state
         stateFlow.value = ConnectionState.DISCONNECTED
+        _connectedDeviceAddress.value = null
         connectionJob?.cancel()
         readJob?.cancel()
         try { inputStream?.close() } catch (e: Exception) {}

@@ -1,5 +1,7 @@
 package com.itantra.core.transceiver
 
+import kotlinx.coroutines.runBlocking
+
 import com.itantra.core.crypto.CryptoPrimitives
 import com.itantra.core.crypto.SecureSessionManager
 import com.itantra.core.crypto.SecureSessionState
@@ -29,7 +31,7 @@ class PeerProtocolAndLatencyTest {
 
     // 1. Two-peer SAS confirmation lifecycle & capabilities exchange
     @Test
-    fun testTwoPeerHandshakeSasAndEncryptedCapabilities() {
+    fun testTwoPeerHandshakeSasAndEncryptedCapabilities() = runBlocking {
         val alice = SecureSessionManager()
         val bob = SecureSessionManager()
 
@@ -91,7 +93,7 @@ class PeerProtocolAndLatencyTest {
 
     // 2. ACK vs HUMAN_ACK distinction in transceiver protocol
     @Test
-    fun testAckVsHumanAckDistinction() {
+    fun testAckVsHumanAckDistinction() = runBlocking {
         val msgId = 555L
 
         // Regular transport delivery ACK
@@ -121,7 +123,7 @@ class PeerProtocolAndLatencyTest {
 
     // 3. Plaintext semantic payload vs ciphertext vs wire frame byte accounting
     @Test
-    fun testAuthoritativeByteAccounting() {
+    fun testAuthoritativeByteAccounting() = runBlocking {
         val alice = SecureSessionManager()
         val bob = SecureSessionManager()
         val h1 = alice.startHandshake(true)
@@ -158,7 +160,7 @@ class PeerProtocolAndLatencyTest {
 
     // 4. Crypto timing recording in MetricsRecorder
     @Test
-    fun testCryptoTimingRecorderIntegration() {
+    fun testCryptoTimingRecorderIntegration() = runBlocking {
         val alice = SecureSessionManager()
         val bob = SecureSessionManager()
         val h1 = alice.startHandshake(true)
@@ -193,7 +195,7 @@ class PeerProtocolAndLatencyTest {
 
     // 5. Estimated E2E latency composition & honest labeling
     @Test
-    fun testEstimatedE2eLatencyComposition() {
+    fun testEstimatedE2eLatencyComposition() = runBlocking {
         val sttLatency = 180L
         val mtLatency = 350L
         val cryptoLatency = 3L
@@ -234,7 +236,7 @@ class PeerProtocolAndLatencyTest {
 
     // 6. Emergency semantic code resolves directly into receiver's active language
     @Test
-    fun testEmergencyCodeReceiverLanguageResolution() {
+    fun testEmergencyCodeReceiverLanguageResolution() = runBlocking {
         val senderLanguage = LanguageCode.HINDI
         val receiverLanguage = LanguageCode.KANNADA
         val emergencyCode = EmergencyCode.MEDICAL_EMERGENCY
@@ -263,7 +265,7 @@ class PeerProtocolAndLatencyTest {
 
     // 7. Continuous-mode half-duplex state transitions
     @Test
-    fun testContinuousModeStateTransitions() {
+    fun testContinuousModeStateTransitions() = runBlocking {
         var state = ContinuousListenState.OFF
         assertEquals(ContinuousListenState.OFF, state)
 

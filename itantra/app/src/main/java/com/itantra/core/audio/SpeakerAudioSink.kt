@@ -176,6 +176,25 @@ class SpeakerAudioSink(
     }
 
     /**
+     * Phase 9: Immediately preempts ongoing audio playback.
+     * Pauses, flushes queued PCM buffers from the hardware pipe, and stops the AudioTrack
+     * without blocking or waiting for playback head completion.
+     * Used for immediate override by safety-critical emergency broadcasts.
+     */
+    fun stopImmediately() {
+        val track = audioTrack ?: return
+        try {
+            if (track.playState == AudioTrack.PLAYSTATE_PLAYING) {
+                track.pause()
+                track.flush()
+                track.stop()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
      * Releases AudioTrack and restores original alarm volume and audio focus.
      */
     fun release() {

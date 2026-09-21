@@ -63,6 +63,8 @@ fun LanguagePacksScreen(
                         onClick = {
                             if (summary.isDownloaded) {
                                 viewModel.activateLanguage(summary.language.code)
+                            } else {
+                                viewModel.downloadLanguagePack(summary.language.code)
                             }
                         },
                     )
@@ -144,9 +146,12 @@ private fun LanguagePackRow(summary: LanguagePackSummary, onClick: () -> Unit) {
 
         // Status badge for non-active packs
         if (!isActive) {
-            val (statusLabel, statusColor) = when (summary.availability) {
-                LanguagePackAvailability.DOWNLOADED -> "Installed" to WarningAmber
-                LanguagePackAvailability.AVAILABLE -> "Not Installed" to TextDisabled
+            val isDownloading = summary.sttInstallState == com.itantra.domain.model.LanguagePackInstallState.DOWNLOADING ||
+                                summary.ttsInstallState == com.itantra.domain.model.LanguagePackInstallState.DOWNLOADING
+            val (statusLabel, statusColor) = when {
+                isDownloading -> "Downloading ${summary.downloadProgressPercent ?: 0}%" to WarningAmber
+                summary.availability == LanguagePackAvailability.DOWNLOADED -> "Installed" to WarningAmber
+                summary.availability == LanguagePackAvailability.AVAILABLE -> "Download" to SignalGreenDim
                 else -> "" to TextSecondary
             }
             Text(
